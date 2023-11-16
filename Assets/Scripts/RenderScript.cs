@@ -57,7 +57,7 @@ public class RenderScript : MonoBehaviour
                                     float.Parse(pointValues[2]));
 
             points.Add(p);
-            Debug.Log(p);
+            //Debug.Log(p);
         }
 
         /*
