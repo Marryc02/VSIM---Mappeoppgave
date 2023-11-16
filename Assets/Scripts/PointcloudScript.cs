@@ -20,11 +20,13 @@ public class PointcloudScript : MonoBehaviour
 {
     [SerializeField] bool bDataGenerated = true;
 
-    string inputText = @"Assets/Resources/merged.txt";
-    string outputText = @"Assets/Resources/terrain.txt";
+    string mergedText = @"Assets/Resources/merged.txt";
+    string terrainText = @"Assets/Resources/terrain.txt";
 
+    // Used for deciding how many lines should be skipped when converting the initial document and making a smooth pointcloud.
     float lineSkips = 25;
 
+    // Used to make the pointcloud look nice. Also helps make the triangleSurface smoot later.
     float xMin = 0; float xMax = 0;
     float yMin = 0; float yMax = 0;
     float zMin = 0; float zMax = 0;
@@ -38,11 +40,11 @@ public class PointcloudScript : MonoBehaviour
         if (bDataGenerated)
         {
             // Finds out how many lines there are in the inputted .txt-document.
-            var lineCount = File.ReadLines(inputText).Count();
-            Debug.Log("Amount of lines in the original inputText-file: " + lineCount);
+            var lineCount = File.ReadLines(mergedText).Count();
+            Debug.Log("Amount of lines in the original mergedText-file: " + lineCount);
 
             // Puts the amount of lines in the .txt document in the top of a new .txt-document.
-            File.WriteAllText(outputText, lineCount.ToString() + "\n");
+            File.WriteAllText(terrainText, lineCount.ToString() + "\n");
 
             // Finds min and max values.
             findMinAndMax(lineCount);
@@ -50,17 +52,21 @@ public class PointcloudScript : MonoBehaviour
             // As it currently stands there are over a million lines in the text document, 
             // where virtually all of the lines have incredibly large values, and as such we will be scaling down the values to bring them closer
             // to the origin of the scene, thus making it easer for us to showcase them.
-            ConvertData(lineCount);
-            Debug.Log("Data converted and reduced.");
+            ConvertMerged(lineCount);
+            Debug.Log("Merged converted and reduced.");
 
 
             // -1 since we ignore the first line.
-            lineCount = File.ReadLines(outputText).Count() - 1;
-            Debug.Log("Amount of lines in the new outputText-file: " + lineCount);
+            lineCount = File.ReadLines(terrainText).Count() - 1;
+            Debug.Log("Amount of lines in the new terrainText-file: " + lineCount);
 
-            string[] lines = File.ReadAllLines(outputText);
+            // Stores the entire terrain -file in a string that inherits its size from "lineCount".
+            string[] lines = new string[lineCount];
+            lines = File.ReadAllLines(terrainText);
+            // Overwrites the very first, empty line in the terrain -file.
             lines[0] = lineCount.ToString();
-            File.WriteAllLines(outputText, lines);
+            // Writes the entire lines -string into the terrainText file, without touching the very first line that tells the number of lines.
+            File.WriteAllLines(terrainText, lines);
         }
     }
 
@@ -69,7 +75,7 @@ public class PointcloudScript : MonoBehaviour
         string line;
         
         // Pass the file path and file name to the StreamReader constructor
-        StreamReader readFile = new StreamReader(inputText);
+        StreamReader readFile = new StreamReader(mergedText);
 
         int a = 0;
 
@@ -80,10 +86,11 @@ public class PointcloudScript : MonoBehaviour
 
             // The value is "200" because we only want to show every 200th line (or point) in the .txt-document as there are
             // way too many of them otherwise. (Unity crashed on me several times)
+            // EDIT: THE INTEGER VALUE HAS BEEN REPLACED WITH A MODULAR VALUE THAT IS DECLARED ABOVE.
             if (a >= lineSkips)
             {
                 // Makes a new list of strings with the name "pointValues".
-                // Assigns the inputText .txt-document as the value of the List, however it also splits each line in the .txt-document
+                // Assigns the mergedText .txt-document as the value of the List, however it also splits each line in the .txt-document
                 // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
                 // deleting empty spaces in the .txt-document.
                 // Lastly it converts the document to a List as it is technically just a really long string with a format.
@@ -99,6 +106,7 @@ public class PointcloudScript : MonoBehaviour
                 fPointValues.Add(float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat));
                 fPointValues.Add(float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat));
 
+                // Assigns min and max values after checking them
                 if (xMin == 0)
                 {
                     xMin = fPointValues[0];
@@ -172,12 +180,12 @@ public class PointcloudScript : MonoBehaviour
         Debug.Log("zMax: " + zMax);
     }
 
-    void ConvertData(int fileLength)
+    void ConvertMerged(int fileLength)
     {
         string line;
         
         // Pass the file path and file name to the StreamReader constructor
-        StreamReader readFile = new StreamReader(inputText);
+        StreamReader readFile = new StreamReader(mergedText);
 
         int a = 0;
 
@@ -188,10 +196,11 @@ public class PointcloudScript : MonoBehaviour
 
             // The value is "200" because we only want to show every 200th line (or point) in the .txt-document as there are
             // way too many of them otherwise. (Unity crashed on me several times)
+            // EDIT: THE INTEGER VALUE HAS BEEN REPLACED WITH A MODULAR VALUE THAT IS DECLARED ABOVE.
             if (a >= lineSkips)
             {
                 // Makes a new list of strings with the name "pointValues".
-                // Assigns the inputText .txt-document as the value of the List, however it also splits each line in the .txt-document
+                // Assigns the mergedText .txt-document as the value of the List, however it also splits each line in the .txt-document
                 // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
                 // deleting empty spaces in the .txt-document.
                 // Lastly it converts the document to a List as it is technically just a really long string with a format.
@@ -215,10 +224,10 @@ public class PointcloudScript : MonoBehaviour
                 // Clears the list to save memory.
                 fPointValues.Clear();
                 
-                // Creates a new output-string that will act as a new line on the outputText-file. This time with the right x, y, z order.
+                // Creates a new output-string that will act as a new line on the terrainText-file. This time with the right x, y, z order.
                 string outputString = pointValues[0] + " " + pointValues[1] + " " + pointValues[2];
 
-                using (StreamWriter writeFile = File.AppendText(outputText))
+                using (StreamWriter writeFile = File.AppendText(terrainText))
                 {
                     writeFile.WriteLine(outputString);
                 } 
