@@ -66,9 +66,9 @@ public class PointcloudScript : MonoBehaviour
             // Read the first line of text
             line = readFile.ReadLine();
 
-            // The value is "600" because we only want to show every 600th line (or point) in the .txt-document as there are
+            // The value is "200" because we only want to show every 200th line (or point) in the .txt-document as there are
             // way too many of them otherwise. (Unity crashed on me several times)
-            if (a >= 50)
+            if (a >= 200)
             {
                 // Makes a new list of strings with the name "pointValues".
                 // Assigns the inputText .txt-document as the value of the List, however it also splits each line in the .txt-document
