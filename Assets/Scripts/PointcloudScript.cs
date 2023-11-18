@@ -23,9 +23,9 @@ public class PointcloudScript : MonoBehaviour
 {
     [SerializeField] bool bDataGenerated = true;
 
-    string mergedText = @"Assets/Resources/merged.txt";
-    string terrainText = @"Assets/Resources/terrain.txt";
-    string smoothTerrain = @"Assets/Resources/smoothTerrain.txt";
+    string mergedFile = @"Assets/Resources/merged.txt";
+    string terrainFile = @"Assets/Resources/terrain.txt";
+    string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
 
     // Used for deciding how many lines should be skipped when converting the initial document and making a smooth pointcloud.
     float lineSkips = 25;
@@ -35,6 +35,8 @@ public class PointcloudScript : MonoBehaviour
     float yMin = 0; float yMax = 0;
     float zMin = 0; float zMax = 0;
 
+    List<Vector3> convertedList = new List<Vector3>();
+
     float xStep = 10; float zStep = 7;
     float deltaX = 0; float deltaZ = 0;
     
@@ -43,20 +45,19 @@ public class PointcloudScript : MonoBehaviour
     // Runs before Start().
     void Awake() {
         if (bDataGenerated)
-        {
+        {            
+            // As it currently stands there are over a million lines in the text document, 
+            // where virtually all of the lines have incredibly large values, and as such we will be scaling down the values to bring them closer
+            // to the origin of the scene, thus making it easer for us to showcase them.
+            ConvertMerged(mergedFile);
+            Debug.Log("Merged has been successfully converted and modified.");
+
+            // Writes an inputted List over to a file.
+            writePointcloud(convertedList, terrainFile);
+            Debug.Log("Successfully wrote terrain file.");
+
+
             /*
-            // Finds out how many lines there are in the inputted .txt-document.
-            var lineCount = File.ReadLines(mergedText).Count();
-            Debug.Log("Amount of lines in the original mergedText-file: " + lineCount);
-
-            // Puts the amount of lines in the .txt document in the top of a new .txt-document.
-            File.WriteAllText(terrainText, lineCount.ToString() + "\n");
-
-            // Finds min and max values.
-            findMinAndMax(lineCount);
-
-
-
             // As it currently stands there are over a million lines in the text document, 
             // where virtually all of the lines have incredibly large values, and as such we will be scaling down the values to bring them closer
             // to the origin of the scene, thus making it easer for us to showcase them.
@@ -64,19 +65,19 @@ public class PointcloudScript : MonoBehaviour
             Debug.Log("Merged converted and reduced.");
 
             // -1 since we ignore the first line.
-            lineCount = File.ReadLines(terrainText).Count() - 1;
-            Debug.Log("Amount of lines in the new terrainText-file: " + lineCount);
+            lineCount = File.ReadLines(terrainFile).Count() - 1;
+            Debug.Log("Amount of lines in the new terrainFile-file: " + lineCount);
             // Stores the entire terrain -file in a string that inherits its size from "lineCount".
             string[] lines = new string[lineCount];
-            lines = File.ReadAllLines(terrainText);
+            lines = File.ReadAllLines(terrainFile);
             // Overwrites the very first, empty line in the terrain -file.
             lines[0] = lineCount.ToString();
-            // Writes the entire lines -string into the terrainText file, without touching the very first line that tells the number of lines.
-            File.WriteAllLines(terrainText, lines);
+            // Writes the entire lines -string into the terrainFile file, without touching the very first line that tells the number of lines.
+            File.WriteAllLines(terrainFile, lines);
 
 
 
-            lineCount = File.ReadLines(terrainText).Count();
+            lineCount = File.ReadLines(terrainFile).Count();
             Debug.Log("Amount of lines in the terrain-file: " + lineCount);
 
             // Here we convert our terrain -file to one that looks smoother, and that can help us achieve a smooth texture for our triangles later.
@@ -93,110 +94,122 @@ public class PointcloudScript : MonoBehaviour
             lines = File.ReadAllLines(smoothTerrain);
             // Overwrites the very first, empty line in the smoothTerrain -file.
             lines[0] = lineCount.ToString();
-            // Writes the entire lines -string into the terrainText file, without touching the very first line that tells the number of lines.
+            // Writes the entire lines -string into the terrainFile file, without touching the very first line that tells the number of lines.
             File.WriteAllLines(smoothTerrain, lines);
             */
         }
     }
-
-    /*
-    void findMinAndMax(int fileLength)
+    
+    // Converts merged.txt
+    void ConvertMerged(string input)
     {
-        string line;
-        
-        // Pass the file path and file name to the StreamReader constructor
-        StreamReader readFile = new StreamReader(mergedText);
+        // Pass the file path and file name to the StreamReader constructor.
+        StreamReader readFile = new StreamReader(input);
+
+        // Finds out how many lines there are in the inputted .txt-document.
+        var lineCount = File.ReadLines(input).Count();
+        Debug.Log("Amount of lines in the original mergedFile-file: " + lineCount);
+
+
+        List<Vector3> mergedList = new List<Vector3>();
 
         int a = 0;
 
-        for (int i = 0; i < fileLength; i++)
+        for (int i = 0; i < lineCount; i++)
         {
-            // Read the first line of text
-            line = readFile.ReadLine();
+            // Read the first line of text.
+            string line = readFile.ReadLine();
 
-            // The value is "200" because we only want to show every 200th line (or point) in the .txt-document as there are
-            // way too many of them otherwise. (Unity crashed on me several times)
-            // EDIT: THE INTEGER VALUE HAS BEEN REPLACED WITH A MODULAR VALUE THAT IS DECLARED ABOVE.
+            // An if-check that helps us determine how many lines we want to skip in the file. (I want fewer lines in the new terrain-file).
             if (a >= lineSkips)
             {
                 // Makes a new list of strings with the name "pointValues".
-                // Assigns the mergedText .txt-document as the value of the List, however it also splits each line in the .txt-document
+                // Assigns the mergedFile .txt-document as the value of the List, however it also splits each line in the .txt-document
                 // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
                 // deleting empty spaces in the .txt-document.
                 // Lastly it converts the document to a List as it is technically just a really long string with a format.
                 List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 
-                // Creates a new list like previously, but made of floats instead. 
-                // This is so that we can directly alter the individual values in the points.
-                // We also swap the y- and z- values as 'kartverket' uses the z-value to denote height which is a no-go for us.
-                // Lastly we subtract a high value that exists on every single line on the width- and length- axis so that we can bring the points
-                // closer to the scenes' origin.
-                List<float> fPointValues = new List<float>();
-                fPointValues.Add(float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat));
-                fPointValues.Add(float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat));
-                fPointValues.Add(float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat));
+                // Adds the recently split three string values to the mergedList as a Vector3 of floats by Parsing them.
+                // NOTE: For some reason not adding "CultureInfo.InvariantCulture.NumberFormat" 
+                // makes the renderer unable to recognise the file as valid. I assume that this is because it sees the ".'s" in the float values
+                // and gets confused. I therefore believe that "CultureInfo.InvariantCulture.NumberFormat" makes the code read the ".'s" as ",".
+                // Could this be a matter of Unity not liking the fact that the language on my computer is Norwegain rather than its standard?^^
+                mergedList.Add(
+                    new Vector3(
+                        float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat),
+                        float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat),
+                        float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat)
+                    )
+                );
 
-                // Assigns min and max values after checking them
-                if (xMin == 0)
-                {
-                    xMin = fPointValues[0];
-                }
-                else if (fPointValues[0] < xMin)
-                {
-                    xMin = fPointValues[0];
-                }
-
-                if (xMax == 0)
-                {
-                    xMax = fPointValues[0];
-                }
-                else if (fPointValues[0] > xMax)
-                {
-                    xMax = fPointValues[0];
-                }
-
-                if (yMin == 0)
-                {
-                    yMin = fPointValues[1];
-                }
-                else if (fPointValues[1] < yMin)
-                {
-                    yMin = fPointValues[1];
-                }
-
-                if (yMax == 0)
-                {
-                    yMax = fPointValues[1];
-                }
-                else if (fPointValues[1] > yMax)
-                {
-                    yMax = fPointValues[1];
-                }
-
-                if (zMin == 0)
-                {
-                    zMin = fPointValues[2];
-                }
-                else if (fPointValues[2] < zMin)
-                {
-                    zMin = fPointValues[2];
-                }
-
-                if (zMax == 0)
-                {
-                    zMax = fPointValues[2];
-                }
-                else if (fPointValues[2] > zMax)
-                {
-                    zMax = fPointValues[2];
-                }
-                
-                // Clears the list to save memory.
-                fPointValues.Clear();
+                a = 0;
             }
             else
             {
                 a++;
+            }
+        }
+
+        // Finds the smallst and largest values 
+        for (int i = 0; i < mergedList.Count; i++)
+        {
+            // Assigns min and max values of x, y and z after checking them.
+            // x
+            if (xMin == 0)
+            {
+                xMin = mergedList[i].x;
+            }
+            else if (mergedList[i].x < xMin)
+            {
+                xMin = mergedList[i].x;
+            }
+
+            if (xMax == 0)
+            {
+                xMax = mergedList[i].x;
+            }
+            else if (mergedList[i].x > xMax)
+            {
+                xMax = mergedList[i].x;
+            }
+
+            // y
+            if (yMin == 0)
+            {
+                yMin = mergedList[i].y;
+            }
+            else if (mergedList[i].y < yMin)
+            {
+                yMin = mergedList[i].y;
+            }
+
+            if (yMax == 0)
+            {
+                yMax = mergedList[i].y;
+            }
+            else if (mergedList[i].y > yMax)
+            {
+                yMax = mergedList[i].y;
+            }
+
+            // z
+            if (zMin == 0)
+            {
+                zMin = mergedList[i].z;
+            }
+            else if (mergedList[i].z < zMin)
+            {
+                zMin = mergedList[i].z;
+            }
+
+            if (zMax == 0)
+            {
+                zMax = mergedList[i].z;
+            }
+            else if (mergedList[i].z > zMax)
+            {
+                zMax = mergedList[i].z;
             }
         }
 
@@ -208,68 +221,60 @@ public class PointcloudScript : MonoBehaviour
 
         Debug.Log("zMin: " + zMin);
         Debug.Log("zMax: " + zMax);
+
+
+        // Translates the contents of mergedList to convertedList while taking offset from the scenes' origin into account. 
+        // (convertedList starts in the scenes origin).
+        for (int i = 0; i < mergedList.Count; i++)
+        {
+            float tempX = mergedList[i].x - (xMin + xMax) / 2;
+            float tempY = mergedList[i].y - (yMin + yMax) / 2;
+            float tempZ = mergedList[i].z - (zMin + zMax) / 2;
+
+            convertedList.Add(
+                new Vector3(
+                    tempX,
+                    tempY,
+                    tempZ
+                )
+            );
+        }
+
+        mergedList.Clear();
     }
 
-    void ConvertMerged(int fileLength)
+    // Writes an inputted List over to a file.
+    void writePointcloud(List<Vector3> input, string output)
     {
-        string line;
-        
-        // Pass the file path and file name to the StreamReader constructor
-        StreamReader readFile = new StreamReader(mergedText);
+        // Puts the amount of lines in the inputted List at the top of the terrainFile-file.
+        File.WriteAllText(output, input.Count.ToString() + "\n");
 
-        int a = 0;
+        /*
+        // Puts the amount of lines in the inputted List at the top of the terrainFile-file.
+        var lines = File.ReadAllLines(output);
+        lines[0] = input.Count.ToString();*/ // Hvordan har du tenkt å referere til en linje som ikke finnes?
 
-        for (int i = 0; i < fileLength; i++)
+        // Loops throught convertedList and formats each vector into a string, which is then printed out in the terrainFile-file.
+        for (int i = 0; i < input.Count; i++)
         {
-            // Read the first line of text
-            line = readFile.ReadLine();
+            var outputLine = input[i].x + " " + input[i].y + " " + input[i].z;
+            outputLine = outputLine.Replace(",", ".");
 
-            // The value is "200" because we only want to show every 200th line (or point) in the .txt-document as there are
-            // way too many of them otherwise. (Unity crashed on me several times)
-            // EDIT: THE INTEGER VALUE HAS BEEN REPLACED WITH A MODULAR VALUE THAT IS DECLARED ABOVE.
-            if (a >= lineSkips)
+            using (StreamWriter writeFile = File.AppendText(output))
             {
-                // Makes a new list of strings with the name "pointValues".
-                // Assigns the mergedText .txt-document as the value of the List, however it also splits each line in the .txt-document
-                // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
-                // deleting empty spaces in the .txt-document.
-                // Lastly it converts the document to a List as it is technically just a really long string with a format.
-                List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
-                
-                // Creates a new list like previously, but made of floats instead. 
-                // This is so that we can directly alter the individual values in the points.
-                // We also swap the y- and z- values as 'kartverket' uses the z-value to denote height which is a no-go for us.
-                // Lastly we subtract a high value that exists on every single line on the width- and length- axis so that we can bring the points
-                // closer to the scenes' origin.
-                List<float> fPointValues = new List<float>();
-                fPointValues.Add(float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat) - ((xMin + xMax) / 2));
-                fPointValues.Add(float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat) - ((yMin + yMax) / 2));
-                fPointValues.Add(float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat) - ((zMin + zMax) / 2));
-
-                // Converts the points back into strings.
-                pointValues[0] = fPointValues[0].ToString();
-                pointValues[1] = fPointValues[1].ToString();
-                pointValues[2] = fPointValues[2].ToString();
-                
-                // Clears the list to save memory.
-                fPointValues.Clear();
-                
-                // Creates a new output-string that will act as a new line on the terrainText-file. This time with the right x, y, z order.
-                string outputString = pointValues[0] + " " + pointValues[1] + " " + pointValues[2];
-
-                using (StreamWriter writeFile = File.AppendText(terrainText))
-                {
-                    writeFile.WriteLine(outputString);
-                } 
-                a = 0;
-            }
-            else
-            {
-                a++;
+                writeFile.WriteLine(outputLine);
             }
         }
+
+        /*
+        for (int i = 0; i < input.Count + 1; i++)
+        {
+            var text = text.Replace("some text", "new value");
+            File.WriteAllText(output, text);
+        }*/
     }
 
+    /*
     void ConvertTerrainToSmooth(int fileLength)
     {
         List<float> o = new List<float>();
@@ -285,7 +290,7 @@ public class PointcloudScript : MonoBehaviour
         string line;
 
         // Pass the file path and file name to the StreamReader constructor
-        StreamReader readFile = new StreamReader(terrainText);
+        StreamReader readFile = new StreamReader(terrainFile);
 
 
         for (int i = 1; i < fileLength; i++)
@@ -294,7 +299,7 @@ public class PointcloudScript : MonoBehaviour
             line = readFile.ReadLine();
 
             // Makes a new list of strings with the name "pointValues".
-            // Assigns the mergedText .txt-document as the value of the List, however it also splits each line in the .txt-document
+            // Assigns the mergedFile .txt-document as the value of the List, however it also splits each line in the .txt-document
             // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
             // deleting empty spaces in the .txt-document.
             // Lastly it converts the document to a List as it is technically just a really long string with a format.

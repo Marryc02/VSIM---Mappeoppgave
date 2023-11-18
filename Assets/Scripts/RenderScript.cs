@@ -9,9 +9,17 @@ using UnityEngine.AI;
 
 public class RenderScript : MonoBehaviour
 {
+    [SerializeField] bool regularTerrain = true;
+    [SerializeField] bool smoothTerrain = false;
+
+    string chosenFile;
+    string terrainFile = @"Assets/Resources/terrain.txt";
+    string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
+    bool fileHasBeenChosen = true;
+
+    List<Vector3> points = new List<Vector3>();
     int pointsCount;
 
-    string terrainFile = @"Assets/Resources/terrain.txt";
 
     GraphicsBuffer meshTriangles;
     GraphicsBuffer vertexPositions;
@@ -23,42 +31,65 @@ public class RenderScript : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
-        // Finds out how many points there are in the inputted .txt-document.
-        pointsCount = File.ReadLines(terrainFile).Count();
-
-        List<Vector3> points = new List<Vector3>();
-
-        // Pass the file path and file name to the StreamReader constructor
-        StreamReader read = new StreamReader(terrainFile);
-
-        string line;
-
-        for (int i = 0; i < pointsCount; i++)
-        {   
-            // Read the first line of text
-            line = read.ReadLine();
-            // Makes a new list of strings with the name "pointValues".
-            // Assigns the inputText .txt-document as the value of the List, however it also splits each line in the .txt-document
-            // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
-            // deleting empty spaces in the .txt-document.
-            // Lastly it converts the document to a List as it is technically just a really long string with a format.
-            List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
-            
-            // Checks that there is actually three float values to put in the vector that is generated below.
-            // It has the added benefit of outright ignoring the very first line in the .txt-file, 
-            // that simply states how many lines are in the document in total.
-            if (pointValues.Count() != 3)
-            {
-                continue;
-            }
-
-            Vector3 p = new Vector3(float.Parse(pointValues[0]),
-                                    float.Parse(pointValues[1]),
-                                    float.Parse(pointValues[2]));
-
-            points.Add(p);
-            //Debug.Log(p);
+        if (regularTerrain == true && smoothTerrain == false)
+        {
+            chosenFile = terrainFile;
         }
+        else if (regularTerrain == false && smoothTerrain == true)
+        {
+            chosenFile = smoothTerrainFile;
+        }
+        else
+        {
+            fileHasBeenChosen = false;
+        }
+
+        if (fileHasBeenChosen == false)
+        {
+            Debug.Log("You did not select a terrain to render properly!");
+        }
+        else
+        {
+            // Finds out how many points there are in the inputted .txt-document.
+            pointsCount = File.ReadLines(chosenFile).Count();
+
+            // Pass the file path and file name to the StreamReader constructor
+            StreamReader read = new StreamReader(chosenFile);
+
+            for (int i = 0; i < pointsCount; i++)
+            {   
+                // Read the first line of text
+                string line = read.ReadLine();
+                // Makes a new list of strings with the name "pointValues".
+                // Assigns the inputText .txt-document as the value of the List, however it also splits each line in the .txt-document
+                // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
+                // deleting empty spaces in the .txt-document.
+                // Lastly it converts the document to a List as it is technically just a really long string with a format.
+                List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+            
+                // Checks that there is actually three float values to put in the vector that is generated below.
+                // It has the added benefit of outright ignoring the very first line in the .txt-file, 
+                // that simply states how many lines are in the document in total.
+                if (pointValues.Count() != 3)
+                {
+                    continue;
+                }
+
+                // Adds the recently split three string values to the mergedList as a Vector3 of floats by Parsing them.
+                // NOTE: For some reason not adding "CultureInfo.InvariantCulture.NumberFormat" 
+                // makes the renderer unable to recognise the file as valid. I assume that this is because it sees the ".'s" in the float values
+                // and gets confused. I therefore believe that "CultureInfo.InvariantCulture.NumberFormat" makes the code read the ".'s" as ",".
+                // Could this be a matter of Unity not liking the fact that the language on my computer is Norwegain rather than its standard?^^
+                points.Add(
+                    new Vector3(
+                        float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat),
+                        float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat),
+                        float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat)
+                    )
+                );
+        }
+        }
+        
 
         /*
         Code below obtained form Unity's documentation on RenderPrimitives
@@ -69,6 +100,7 @@ public class RenderScript : MonoBehaviour
         
         meshPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, pointsCount, 3 * sizeof(float));
         meshPositions.SetData(points.ToArray());
+        points.Clear();
 
         vertexPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.vertices.Length, 3 * sizeof(float));
         vertexPositions.SetData(mesh.vertices);
