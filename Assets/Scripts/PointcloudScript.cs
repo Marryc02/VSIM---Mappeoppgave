@@ -253,7 +253,8 @@ public class PointcloudScript : MonoBehaviour
         // List used for making new points in the pointcloud.
         // This mess is best imagined as a plane, that acts as a List of rows, that contain Lists of given areas (squares for example),
         // who themselves act as a List of Vector3's.
-        List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>();
+        //List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>();
+        List<Vector3>[,] buckets = new List<Vector3>[(int)Math.Round(xStep), (int)Math.Round(zStep)];
 
 
         // Reads the first line of text.
@@ -291,7 +292,7 @@ public class PointcloudScript : MonoBehaviour
             p.Add((smoothConvertedList[i].z - zMin) / deltaZ);
 
             // Adds Vector3's to the "squares" inside the "rows" of the "plane" called 'buckets'.
-            buckets[(int)Math.Round(o[i])][(int)Math.Round(p[i])].Add(
+            buckets[(int)Math.Round(o[i]), (int)Math.Round(p[i])].Add(
                 new Vector3(
                     smoothConvertedList[i].x,
                     smoothConvertedList[i].y,
