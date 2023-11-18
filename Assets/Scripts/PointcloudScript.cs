@@ -58,44 +58,9 @@ public class PointcloudScript : MonoBehaviour
 
 
             /*
-            // As it currently stands there are over a million lines in the text document, 
-            // where virtually all of the lines have incredibly large values, and as such we will be scaling down the values to bring them closer
-            // to the origin of the scene, thus making it easer for us to showcase them.
-            ConvertMerged(lineCount);
-            Debug.Log("Merged converted and reduced.");
-
-            // -1 since we ignore the first line.
-            lineCount = File.ReadLines(terrainFile).Count() - 1;
-            Debug.Log("Amount of lines in the new terrainFile-file: " + lineCount);
-            // Stores the entire terrain -file in a string that inherits its size from "lineCount".
-            string[] lines = new string[lineCount];
-            lines = File.ReadAllLines(terrainFile);
-            // Overwrites the very first, empty line in the terrain -file.
-            lines[0] = lineCount.ToString();
-            // Writes the entire lines -string into the terrainFile file, without touching the very first line that tells the number of lines.
-            File.WriteAllLines(terrainFile, lines);
-
-
-
-            lineCount = File.ReadLines(terrainFile).Count();
-            Debug.Log("Amount of lines in the terrain-file: " + lineCount);
-
             // Here we convert our terrain -file to one that looks smoother, and that can help us achieve a smooth texture for our triangles later.
             ConvertTerrainToSmooth(lineCount);
             Debug.Log("smoothTerrain converted and reduced.");
-
-            // -1 since we ignore the first line.
-            // Checking this again just in case
-            lineCount = File.ReadLines(smoothTerrain).Count() - 1;
-            Debug.Log("Amount of lines in the new smoothTerrain-file: " + lineCount);
-
-            // Stores the entire smoothTerrain -file in a string that inherits its size from "lineCount".
-            lines = new string[lineCount];
-            lines = File.ReadAllLines(smoothTerrain);
-            // Overwrites the very first, empty line in the smoothTerrain -file.
-            lines[0] = lineCount.ToString();
-            // Writes the entire lines -string into the terrainFile file, without touching the very first line that tells the number of lines.
-            File.WriteAllLines(smoothTerrain, lines);
             */
         }
     }
@@ -249,11 +214,6 @@ public class PointcloudScript : MonoBehaviour
         // Puts the amount of lines in the inputted List at the top of the terrainFile-file.
         File.WriteAllText(output, input.Count.ToString() + "\n");
 
-        /*
-        // Puts the amount of lines in the inputted List at the top of the terrainFile-file.
-        var lines = File.ReadAllLines(output);
-        lines[0] = input.Count.ToString();*/ // Hvordan har du tenkt å referere til en linje som ikke finnes?
-
         // Loops throught convertedList and formats each vector into a string, which is then printed out in the terrainFile-file.
         for (int i = 0; i < input.Count; i++)
         {
@@ -265,14 +225,13 @@ public class PointcloudScript : MonoBehaviour
                 writeFile.WriteLine(outputLine);
             }
         }
-
-        /*
-        for (int i = 0; i < input.Count + 1; i++)
-        {
-            var text = text.Replace("some text", "new value");
-            File.WriteAllText(output, text);
-        }*/
     }
+
+    // Converts an inputted terrain into a smooth version of itself.
+    void ConvertTerrainToSmooth(string input)
+    {
+        
+    })
 
     /*
     void ConvertTerrainToSmooth(int fileLength)
