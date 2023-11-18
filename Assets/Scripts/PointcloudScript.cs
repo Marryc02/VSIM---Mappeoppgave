@@ -31,19 +31,26 @@ public class PointcloudScript : MonoBehaviour
     float lineSkips = 25;
 
     // Used to make the pointcloud look nice. Also helps make the triangleSurface smoot later.
-    float xMin = 0; float xMax = 0;
-    float yMin = 0; float yMax = 0;
-    float zMin = 0; float zMax = 0;
+    float xMin = 0; 
+    float xMax = 0;
+
+    float yMin = 0; 
+    float yMax = 0;
+
+    float zMin = 0; 
+    float zMax = 0;
 
     // List that contains the final converted values for the terrainFile-file.
     List<Vector3> convertedList = new List<Vector3>();
     // List that contains the final converted values for the smoothTerrainFile-file.
     List<Vector3> smoothTerrainList = new List<Vector3>();
 
-    float xStep = 10; float zStep = 7;
-    float deltaX = 0; float deltaZ = 0;
-    
+    [SerializeField] float xStep = 10; 
+    [SerializeField] float zStep = 7;
 
+    float deltaX = 0; 
+    float deltaZ = 0;
+    
 
     // Runs before Start().
     void Awake() {
@@ -61,7 +68,7 @@ public class PointcloudScript : MonoBehaviour
 
             // Converts an inputted terrain into a smooth version of itself.
             ConvertTerrainToSmooth(terrainFile);
-            Debug.Log("Terrain has been smoothed successfully.")
+            Debug.Log("Terrain has been smoothed successfully.");
 
             // Writes an inputted List over to a file.
             writePointcloud(smoothTerrainList, smoothTerrainFile);
@@ -221,7 +228,7 @@ public class PointcloudScript : MonoBehaviour
         StreamReader readFile = new StreamReader(input);
 
         // Finds out how many lines there are in the inputted .txt-document.
-        var lineCount = File.ReadLines(input).Count();
+        var lineCount = File.ReadLines(input).Count() - 1;
         Debug.Log("Amount of lines in the original terrain-file: " + lineCount);
 
 
@@ -240,19 +247,22 @@ public class PointcloudScript : MonoBehaviour
 
 
         // Used in the List "buckets".
-        List<float> o = new List<float>;
-        List<float> p = new List<float>;
+        List<float> o = new List<float>(/*new float [lineCount - 1]*/);
+        List<float> p = new List<float>(/*new float [lineCount - 1]*/);
 
         // List used for making new points in the pointcloud.
         // This mess is best imagined as a plane, that acts as a List of rows, that contain Lists of given areas (squares for example),
         // who themselves act as a List of Vector3's.
-        List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>();
+        List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>(
+            /*[new List<List<List<Vector3>>>[(int)Math.Round(xStep)]]
+            [new List<List<Vector3>>[(int)Math.Round(zStep)]]*/
+            );
 
 
         // Reads the first line of text.
         string line = readFile.ReadLine();
 
-        for (int i = 0; i < lineCount - 1; i++)
+        for (int i = 0; i < lineCount; i++)
         {
             // Reads the second line of text.
             line = readFile.ReadLine();
@@ -278,8 +288,10 @@ public class PointcloudScript : MonoBehaviour
             );
 
             // Defines "o" and "p" in the current iteration.
-            o[i] = (smoothConvertedList[i].x - xMin) / deltaX;
-            p[i] = (smoothConvertedList[i].z - zMin) / deltaZ;
+            /*o[i] = (smoothConvertedList[i].x - xMin) / deltaX;
+            p[i] = (smoothConvertedList[i].z - zMin) / deltaZ;*/
+            o.Add((smoothConvertedList[i].x - xMin) / deltaX);
+            p.Add((smoothConvertedList[i].z - zMin) / deltaZ);
 
             // Adds Vector3's to the "squares" inside the "rows" of the "plane" called 'buckets'.
             buckets[(int)Math.Round(o[i])][(int)Math.Round(p[i])].Add(
