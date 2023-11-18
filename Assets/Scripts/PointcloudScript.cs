@@ -44,6 +44,7 @@ public class PointcloudScript : MonoBehaviour
     void Awake() {
         if (bDataGenerated)
         {
+            /*
             // Finds out how many lines there are in the inputted .txt-document.
             var lineCount = File.ReadLines(mergedText).Count();
             Debug.Log("Amount of lines in the original mergedText-file: " + lineCount);
@@ -94,9 +95,11 @@ public class PointcloudScript : MonoBehaviour
             lines[0] = lineCount.ToString();
             // Writes the entire lines -string into the terrainText file, without touching the very first line that tells the number of lines.
             File.WriteAllLines(smoothTerrain, lines);
+            */
         }
     }
 
+    /*
     void findMinAndMax(int fileLength)
     {
         string line;
@@ -332,4 +335,5 @@ public class PointcloudScript : MonoBehaviour
             }
         }
     }
+    */
 }
