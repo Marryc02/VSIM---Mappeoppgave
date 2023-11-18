@@ -253,10 +253,7 @@ public class PointcloudScript : MonoBehaviour
         // List used for making new points in the pointcloud.
         // This mess is best imagined as a plane, that acts as a List of rows, that contain Lists of given areas (squares for example),
         // who themselves act as a List of Vector3's.
-        List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>(
-            /*[new List<List<List<Vector3>>>[(int)Math.Round(xStep)]]
-            [new List<List<Vector3>>[(int)Math.Round(zStep)]]*/
-            );
+        List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>();
 
 
         // Reads the first line of text.
