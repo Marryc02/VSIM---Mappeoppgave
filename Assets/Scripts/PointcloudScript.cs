@@ -50,18 +50,19 @@ public class PointcloudScript : MonoBehaviour
             // where virtually all of the lines have incredibly large values, and as such we will be scaling down the values to bring them closer
             // to the origin of the scene, thus making it easer for us to showcase them.
             ConvertMerged(mergedFile);
-            Debug.Log("Merged has been successfully converted and modified.");
+            Debug.Log("Merged has been converted and modified successfully.");
 
             // Writes an inputted List over to a file.
             writePointcloud(convertedList, terrainFile);
             Debug.Log("Successfully wrote terrain file.");
 
+            // Converts an inputted terrain into a smooth version of itself.
+            ConvertTerrainToSmooth(terrainFile);
+            Debug.Log("Terrain has been smoothed successfully.")
 
-            /*
             // Here we convert our terrain -file to one that looks smoother, and that can help us achieve a smooth texture for our triangles later.
             ConvertTerrainToSmooth(lineCount);
             Debug.Log("smoothTerrain converted and reduced.");
-            */
         }
     }
     
@@ -82,7 +83,7 @@ public class PointcloudScript : MonoBehaviour
 
         for (int i = 0; i < lineCount; i++)
         {
-            // Read the first line of text.
+            // Reads the first line of text.
             string line = readFile.ReadLine();
 
             // An if-check that helps us determine how many lines we want to skip in the file. (I want fewer lines in the new terrain-file).
@@ -225,13 +226,101 @@ public class PointcloudScript : MonoBehaviour
                 writeFile.WriteLine(outputLine);
             }
         }
+
+        input.Clear();
     }
 
     // Converts an inputted terrain into a smooth version of itself.
     void ConvertTerrainToSmooth(string input)
     {
+        // Pass the file path and file name to the StreamReader constructor.
+        StreamReader readFile = new StreamReader(input);
+
+        // Finds out how many lines there are in the inputted .txt-document.
+        var lineCount = File.ReadLines(input).Count();
+        Debug.Log("Amount of lines in the original terrain-file: " + lineCount);
+
+
+        // Calculates deltaX and deltaZ
+        deltaX = (xMax - xMin) / xStep;
+        deltaZ = (zMax - zMin) / zStep;
         
-    })
+        float averageHeight = 0;
+
+
+        // List for converting the terrain-file to a list of Vector3's.
+        List<Vector3> smoothConvertedList = new List<Vector3>();
+
+
+        // Used in the List "buckets".
+        List<float> o = new List<float>;
+        List<float> p = new List<float>;
+
+        // List used for making new points in the pointcloud.
+        // This mess is best imagined as a plane, that acts as a List of rows, that contain Lists of given areas (squares for example),
+        // who themselves act as a List of Vector3's.
+        List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>();
+
+
+        // Reads the first line of text.
+        string line = readFile.ReadLine();
+
+        for (int i = 0; i < lineCount - 1; i++)
+        {
+            // Reads the second line of text.
+            line = readFile.ReadLine();
+
+            // Makes a new list of strings with the name "pointValues".
+            // Assigns the mergedFile .txt-document as the value of the List, however it also splits each line in the .txt-document
+            // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
+            // deleting empty spaces in the .txt-document.
+            // Lastly it converts the document to a List as it is technically just a really long string with a format.
+            List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+                
+            // Adds the recently split three string values to the mergedList as a Vector3 of floats by Parsing them.
+            // NOTE: For some reason not adding "CultureInfo.InvariantCulture.NumberFormat" 
+            // makes the renderer unable to recognise the file as valid. I assume that this is because it sees the ".'s" in the float values
+            // and gets confused. I therefore believe that "CultureInfo.InvariantCulture.NumberFormat" makes the code read the ".'s" as ",".
+            // Could this be a matter of Unity not liking the fact that the language on my computer is Norwegain rather than its standard?^^
+            smoothConvertedList.Add(
+                new Vector3(
+                    float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat),
+                    float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat),
+                    float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat)
+                    )
+            );
+
+            // Defines "o" and "p" in the current iteration.
+            o[i] = (smoothConvertedList[i].x - xMin) / deltaX;
+            p[i] = (smoothConvertedList[i].z - zMin) / deltaZ;
+
+            // Adds Vector3's to the "squares" inside the "rows" of the "plane" called 'buckets'.
+            buckets[(int)Math.Round(o[i])][(int)Math.Round(p[i])].Add(
+                new Vector3(
+                    smoothConvertedList[i].x,
+                    smoothConvertedList[i].y,
+                    smoothConvertedList[i].z
+                )
+            );
+        }
+
+        // Loop through the "rows" of the "plane" called 'buckets'.
+        for (int i = 0; i < buckets[(int)Math.Round(o[i])].Count; i++)
+        {   
+            // Loop through the "squares" of the current "row" in 'buckets'.
+            for (int j = 0; j < buckets[(int)Math.Round(p[j])].Count; j++)
+            {
+                // Loop through the list of Vector3's in the "square" in 'buckets'.
+                for (int k = 0; k < buckets[k].Count; k++)
+                {
+                    // Add all height-values to a singular value called 'averageHeight'.
+                    averageHeight += buckets[(int)Math.Round(o[i])][(int)Math.Round(p[j])][k].y;
+                }
+                // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
+                averageHeight = averageHeight / buckets[(int)Math.Round(o[i])][(int)Math.Round(p[j])].Count;
+            }
+        }
+    }
 
     /*
     void ConvertTerrainToSmooth(int fileLength)

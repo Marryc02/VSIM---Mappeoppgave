@@ -58,8 +58,9 @@ public class RenderScript : MonoBehaviour
 
             for (int i = 0; i < pointsCount; i++)
             {   
-                // Read the first line of text
+                // Read  the first line of text
                 string line = read.ReadLine();
+                
                 // Makes a new list of strings with the name "pointValues".
                 // Assigns the inputText .txt-document as the value of the List, however it also splits each line in the .txt-document
                 // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
