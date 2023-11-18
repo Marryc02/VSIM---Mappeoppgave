@@ -35,7 +35,10 @@ public class PointcloudScript : MonoBehaviour
     float yMin = 0; float yMax = 0;
     float zMin = 0; float zMax = 0;
 
+    // List that contains the final converted values for the terrainFile-file.
     List<Vector3> convertedList = new List<Vector3>();
+    // List that contains the final converted values for the smoothTerrainFile-file.
+    List<Vector3> smoothTerrainList = new List<Vector3>();
 
     float xStep = 10; float zStep = 7;
     float deltaX = 0; float deltaZ = 0;
@@ -60,9 +63,9 @@ public class PointcloudScript : MonoBehaviour
             ConvertTerrainToSmooth(terrainFile);
             Debug.Log("Terrain has been smoothed successfully.")
 
-            // Here we convert our terrain -file to one that looks smoother, and that can help us achieve a smooth texture for our triangles later.
-            ConvertTerrainToSmooth(lineCount);
-            Debug.Log("smoothTerrain converted and reduced.");
+            // Writes an inputted List over to a file.
+            writePointcloud(smoothTerrainList, smoothTerrainFile);
+            Debug.Log("Successfully wrote a smooth terrain file.");
         }
     }
     
@@ -77,6 +80,7 @@ public class PointcloudScript : MonoBehaviour
         Debug.Log("Amount of lines in the original mergedFile-file: " + lineCount);
 
 
+        // List containing the direct values of the "mergedFile-file".
         List<Vector3> mergedList = new List<Vector3>();
 
         int a = 0;
@@ -197,6 +201,7 @@ public class PointcloudScript : MonoBehaviour
             float tempY = mergedList[i].y - (yMin + yMax) / 2;
             float tempZ = mergedList[i].z - (zMin + zMax) / 2;
 
+            // Creates a final point for each square that is then added to a convertedList.
             convertedList.Add(
                 new Vector3(
                     tempX,
@@ -207,27 +212,6 @@ public class PointcloudScript : MonoBehaviour
         }
 
         mergedList.Clear();
-    }
-
-    // Writes an inputted List over to a file.
-    void writePointcloud(List<Vector3> input, string output)
-    {
-        // Puts the amount of lines in the inputted List at the top of the terrainFile-file.
-        File.WriteAllText(output, input.Count.ToString() + "\n");
-
-        // Loops throught convertedList and formats each vector into a string, which is then printed out in the terrainFile-file.
-        for (int i = 0; i < input.Count; i++)
-        {
-            var outputLine = input[i].x + " " + input[i].y + " " + input[i].z;
-            outputLine = outputLine.Replace(",", ".");
-
-            using (StreamWriter writeFile = File.AppendText(output))
-            {
-                writeFile.WriteLine(outputLine);
-            }
-        }
-
-        input.Clear();
     }
 
     // Converts an inputted terrain into a smooth version of itself.
@@ -245,7 +229,10 @@ public class PointcloudScript : MonoBehaviour
         deltaX = (xMax - xMin) / xStep;
         deltaZ = (zMax - zMin) / zStep;
         
+        // used for calculating the final smooth points.
         float averageHeight = 0;
+        float middleX = 0;
+        float middleZ = 0;
 
 
         // List for converting the terrain-file to a list of Vector3's.
@@ -316,77 +303,45 @@ public class PointcloudScript : MonoBehaviour
                     // Add all height-values to a singular value called 'averageHeight'.
                     averageHeight += buckets[(int)Math.Round(o[i])][(int)Math.Round(p[j])][k].y;
                 }
+                // Find the middle value of the x-coordinate in the "square" in 'buckets'.
+                middleX = xMin + (deltaX / 2) + (deltaX * o[i]);
                 // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
                 averageHeight = averageHeight / buckets[(int)Math.Round(o[i])][(int)Math.Round(p[j])].Count;
+                // Find the middle value of the z-coordinate in the "square" in 'buckets'.
+                middleZ = zMin + (deltaZ / 2) + (deltaZ * p[j]);
+
+                // Creates a final point for each square that is then added to a smoothTerrainList.
+                smoothTerrainList.Add(
+                    new Vector3(
+                        middleX,
+                        averageHeight,
+                        middleZ
+                    )
+                );
             }
         }
+
+        smoothConvertedList.Clear();
     }
 
-    /*
-    void ConvertTerrainToSmooth(int fileLength)
+    // Writes an inputted List over to a file.
+    void writePointcloud(List<Vector3> input, string output)
     {
-        List<float> o = new List<float>();
-        List<float> p = new List<float>();
+        // Puts the amount of lines in the inputted List at the top of the terrainFile-file.
+        File.WriteAllText(output, input.Count.ToString() + "\n");
 
-        List<List<Vector3>> buckets = new List<List<Vector3>>();
-
-        deltaX = (xMax - xMin) / xStep;
-        deltaZ = (zMax - zMin) / zStep;
-        
-        float averageHeight = 0;
-
-        string line;
-
-        // Pass the file path and file name to the StreamReader constructor
-        StreamReader readFile = new StreamReader(terrainFile);
-
-
-        for (int i = 1; i < fileLength; i++)
+        // Loops throught convertedList and formats each vector into a string, which is then printed out in the terrainFile-file.
+        for (int i = 0; i < input.Count; i++)
         {
-            // Read the first line of text
-            line = readFile.ReadLine();
+            var outputLine = input[i].x + " " + input[i].y + " " + input[i].z;
+            outputLine = outputLine.Replace(",", ".");
 
-            // Makes a new list of strings with the name "pointValues".
-            // Assigns the mergedFile .txt-document as the value of the List, however it also splits each line in the .txt-document
-            // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
-            // deleting empty spaces in the .txt-document.
-            // Lastly it converts the document to a List as it is technically just a really long string with a format.
-            List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
-                
-            // Creates a new list like previously, but made of floats instead. 
-            // This is so that we can directly alter the individual values in the points.
-            // We also swap the y- and z- values as 'kartverket' uses the z-value to denote height which is a no-go for us.
-            // Lastly we subtract a high value that exists on every single line on the width- and length- axis so that we can bring the points
-            // closer to the scenes' origin.
-            List<float> fPointValues = new List<float>();
-            fPointValues.Add(float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat));
-            fPointValues.Add(float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat));
-            fPointValues.Add(float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat));
-
-            o[i - 1] = (fPointValues[0] - xMin) / deltaX;
-            p[i - 1] = (fPointValues[2] - zMin) / deltaZ;   
-
-            buckets[(int)Math.Round(o[i - 1])][(int)Math.Round(p[i - 1])] = (new Vector3(fPointValues[0], fPointValues[1], fPointValues[2]));
-
-            // Clears the list to save memory.
-            fPointValues.Clear();
-        }
-
-        for (int i = 0; i < buckets[0].Count; i++)
-        {
-            for (int j = 0; j < buckets[1].Count; j++)
+            using (StreamWriter writeFile = File.AppendText(output))
             {
-                averageHeight += buckets[1][j].y;
-            }
-            averageHeight = averageHeight / buckets[1].Count;
-
-            string outputString = (xMin + (deltaX / 2) + (deltaX * o[i])) + " " + averageHeight + " " + (zMin + (deltaZ / 2) + (deltaZ * p[i]));
-
-            using (StreamWriter writeFile = File.AppendText(smoothTerrain))
-            {
-                writeFile.WriteLine(outputString);
+                writeFile.WriteLine(outputLine);
             }
         }
+
+        input.Clear();
     }
-    */
 }
