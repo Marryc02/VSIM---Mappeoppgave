@@ -45,8 +45,8 @@ public class PointcloudScript : MonoBehaviour
     // List that contains the final converted values for the smoothTerrainFile-file.
     List<Vector3> smoothTerrainList = new List<Vector3>();
 
-    [SerializeField] float xStep = 10; 
-    [SerializeField] float zStep = 7;
+    [SerializeField] int xStep = 10; 
+    [SerializeField] int zStep = 7;
 
     float deltaX = 0; 
     float deltaZ = 0;
@@ -73,6 +73,12 @@ public class PointcloudScript : MonoBehaviour
             // Writes an inputted List over to a file.
             writePointcloud(smoothTerrainList, smoothTerrainFile);
             Debug.Log("Successfully wrote a smooth terrain file.");
+
+            for (int i = 0; i < smoothTerrainList.Count; i++)
+            {
+                Debug.Log(smoothTerrainList[i]);
+            }
+            Debug.Log("The size of the smoothTerrainList is: " + smoothTerrainList.Count);
         }
     }
     
@@ -247,14 +253,14 @@ public class PointcloudScript : MonoBehaviour
 
 
         // Used in the List "buckets".
-        List<float> o = new List<float>(/*new float [lineCount - 1]*/);
-        List<float> p = new List<float>(/*new float [lineCount - 1]*/);
+        int o = 0;
+        int p = 0;
 
         // List used for making new points in the pointcloud.
         // This mess is best imagined as a plane, that acts as a List of rows, that contain Lists of given areas (squares for example),
         // who themselves act as a List of Vector3's.
         //List<List<List<Vector3>>> buckets = new List<List<List<Vector3>>>();
-        List<Vector3>[,] buckets = new List<Vector3>[(int)Math.Round(xStep), (int)Math.Round(zStep)];
+        List<Vector3>[,] buckets = new List<Vector3>[xStep, zStep];
 
 
         // Reads the first line of text.
@@ -286,50 +292,91 @@ public class PointcloudScript : MonoBehaviour
             );
 
             // Defines "o" and "p" in the current iteration.
-            /*o[i] = (smoothConvertedList[i].x - xMin) / deltaX;
-            p[i] = (smoothConvertedList[i].z - zMin) / deltaZ;*/
-            o.Add((smoothConvertedList[i].x - xMin) / deltaX);
-            p.Add((smoothConvertedList[i].z - zMin) / deltaZ);
+            o = (int)Math.Round((smoothConvertedList[i].x - xMin) / deltaX);
+            p = (int)Math.Round((smoothConvertedList[i].z - zMin) / deltaZ);
+
+            // Makes sure "o" and "p" are not out of bounds.
+            if (o < 0) 
+            { 
+                o = 0; 
+            }
+            else if (o >= xStep)
+            {
+                o = xStep - 1; 
+            }
+
+            if (p < 0) 
+            { 
+                p = 0; 
+            }
+            else if (p >= zStep) 
+            { 
+                p = zStep - 1; 
+            }
 
             // Adds Vector3's to the "squares" inside the "rows" of the "plane" called 'buckets'.
-            buckets[(int)Math.Round(o[i]), (int)Math.Round(p[i])].Add(
-                new Vector3(
-                    smoothConvertedList[i].x,
-                    smoothConvertedList[i].y,
-                    smoothConvertedList[i].z
-                )
-            );
+            for (var j = 0; o < xStep; j++) {
+                for (var k = 0; k < zStep; k++) {
+                    // Hva skjer med verdiene i "smoothConvertedList"? Hvor går de hen liksom?
+                    buckets[j, k] = new List<Vector3>();
+                }
+            }
+
+            /*
+            int a = o;
+            int b = p;
+
+            for (a = 0; a < xStep; a++)
+            {
+                for (b = 0; b < zStep; b++)
+                {
+                    //buckets[a, b].Add(
+                        //new Vector3(
+                            //smoothConvertedList[i].x,
+                            //smoothConvertedList[i].y,
+                            //smoothConvertedList[i].z
+                            //)
+                    //);
+                    
+                }
+            }
+            */
+
+            Debug.Log("Made it past the a-b -loop!");
         }
 
+        /*
         // Loop through the "rows" of the "plane" called 'buckets'.
-        for (int i = 0; i < buckets[(int)Math.Round(o[i])].Count; i++)
+        for (int i = 0; i < xStep; i++)
         {   
             // Loop through the "squares" of the current "row" in 'buckets'.
-            for (int j = 0; j < buckets[(int)Math.Round(p[j])].Count; j++)
+            for (int j = 0; j < zStep; j++)
             {
                 // Loop through the list of Vector3's in the "square" in 'buckets'.
-                for (int k = 0; k < buckets[k].Count; k++)
+                for (int k = 0; k < buckets[i, j].Count; k++)
                 {
                     // Add all height-values to a singular value called 'averageHeight'.
-                    averageHeight += buckets[(int)Math.Round(o[i])][(int)Math.Round(p[j])][k].y;
+                    averageHeight += buckets[i, j][k].y;
                 }
+
                 // Find the middle value of the x-coordinate in the "square" in 'buckets'.
-                middleX = xMin + (deltaX / 2) + (deltaX * o[i]);
+                middleX = xMin + (deltaX / 2) + (deltaX * i);
                 // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
-                averageHeight = averageHeight / buckets[(int)Math.Round(o[i])][(int)Math.Round(p[j])].Count;
+                averageHeight = averageHeight / buckets[i, j].Count;
                 // Find the middle value of the z-coordinate in the "square" in 'buckets'.
-                middleZ = zMin + (deltaZ / 2) + (deltaZ * p[j]);
+                middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
 
                 // Creates a final point for each square that is then added to a smoothTerrainList.
                 smoothTerrainList.Add(
                     new Vector3(
-                        middleX,
-                        averageHeight,
-                        middleZ
+                    middleX,
+                    averageHeight,
+                    middleZ
                     )
+            
                 );
             }
-        }
+        }*/
 
         smoothConvertedList.Clear();
     }
