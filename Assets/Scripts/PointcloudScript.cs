@@ -4,6 +4,7 @@ using System.Linq;
 using System.Globalization;
 using System;
 using UnityEngine;
+using Unity.Jobs;
 //using System.Numerics;
 //using System.Numerics;
 
@@ -324,55 +325,135 @@ public class PointcloudScript : MonoBehaviour
         }
         Debug.Log("Made it past the a-b -loop!");
 
-        float averageHeight = 0;
+
+        // THIS IS INSPIRED BY ANDERS' CODE.
+        // Makes a 2d array of bools which will be used later to determine which buckets are empty and which are not.
+        bool[,] bMaskfilled = new bool[xStep, zStep];
+        for (int i = 0; i < xStep; i++)
+        {
+            for (int j = 0; j < zStep; j++)
+            {
+                // If there is no Vector3 in the "square", then:
+                if (buckets[i, j].Count <= 0)
+                {
+                    bMaskfilled[i, j] = false;
+                }
+                else
+                {
+                    bMaskfilled[i, j] = true;
+                }
+            }
+        }
+
+        /*// Fills up the smoothTerrainList -List.
         // Loop through the "rows" of the "plane" called 'buckets'.
         for (int i = 0; i < xStep; i++)
         {   
             // Loop through the "squares" of the current "row" in 'buckets'.
             for (int j = 0; j < zStep; j++)
             {
-                // "?" == if-check   |   : = "if the previous is not true, then do the following:"
-                // Check if the current bucket actually has points in itself: If it does not then use the previous points' averageHeight.
-                //averageHeight = buckets[i, j].Count > 0 ? 0f: averageHeight;
+                smoothTerrainList.Add(new Vector3(0, 0, 0));
+            }
+        }*/
 
-                // Skips squares without points in them. (The code tries to create arectangular grid)
-                if (buckets[i, j].Count <= 0)
+        float averageHeight = 0;
+
+        // Loop through the "rows" of the "plane" called 'buckets'.
+        for (int i = 0; i < xStep; i++)
+        {   
+            // Loop through the "squares" of the current "row" in 'buckets'.
+            for (int j = 0; j < zStep; j++)
+            {   
+                // If the mask is filled, then do this:
+                if (bMaskfilled[i, j])
+                {
+                    // "Do this to each point that exists in the bucket".
+                    // In other words: Loop through each "square" in each "row" and do this to its points.
+                    foreach (var currentPoint in buckets[i,j])
+                    {
+                        // Add all height-values to a singular value called 'averageHeight'.
+                        averageHeight += currentPoint.y;
+                    }
+
+                    // This is in essence an if-check that makes sure that we do not continue making the points if there are no points in the current bucket,
+                    // as that would give us an incorrect value (You cannot divide by "0" as that gives an error, and dividing by "1" returns the same number).
+
+                    var numberOfPoints = 0;
+                    if (buckets[i, j].Count > 0)
+                    {
+                        numberOfPoints = buckets[i,j].Count;
+                    }
+                    else
+                    {
+                        numberOfPoints = 1;
+                    }
+
+                    // Find the middle value of the x-coordinate in the "square" in 'buckets'.
+                    middleX = xMin + (deltaX / 2) + (deltaX * i);
+                    // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
+                    averageHeight /= numberOfPoints;
+                    // Find the middle value of the z-coordinate in the "square" in 'buckets'.
+                    middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
+
+                    // Creates a final point for each square that is then added to a smoothTerrainList.
+                    smoothTerrainList.Add(
+                        new Vector3(
+                            middleX,
+                            averageHeight,
+                            middleZ
+                        )
+                    );
+                    //Debug.LogWarning($"Point: {smoothTerrainList[^1]}");
+                }
+            }
+        }
+
+        for (int i = 0; i < xStep; i++)
+        {
+            for (int j = 0; j < zStep; j++)
+            {
+                // If the mask is filled, and does not require further editing, then simply skip this double for-loop.
+                if (bMaskfilled[i, j])
                 {
                     continue;
                 }
-
-                // "Do this to each point that exists in the bucket".
-                // In other words: Loop through each "square" in each "row" and to this to its points.
-                foreach (var currentPoint in buckets[i,j])
+                else
                 {
-                    // Add all height-values to a singular value called 'averageHeight'.
-                    averageHeight += currentPoint.y;
+                    // THIS IS HEAVILY INSPIRED BY ANDERS' CODE.
+                    int numberOfPoints = 0;
+
+                    var tempY = 0f;
+                    // Compares the x-values of 10 neighbours in the x-direction (xStep) to get an accurate x-value.
+                    for (int xn = i - 10; xn <= i + 10; xn++)
+                    {
+                        if (xn < 0 || xn >= xStep) 
+                        {
+                            continue;
+                        }
+                        
+                        // Compares the z-values of 10 neighbours in the z-direction (zStep) to get an accurate z-value.
+                        for (int zn = j - 10; zn <= j + 10; zn++)
+                        {
+                            if (zn < 0 || zn >= zStep || !bMaskfilled[xn, zn]) 
+                            {
+                                continue;
+                            }
+                            
+                            // adds the y-values of the x- and z- neighbours.
+                            tempY += smoothTerrainList[xn*zStep + zn].y;
+                            numberOfPoints++;
+                        }
+                    }
+
+                    // Divides the temporary, new y-value on the amount of points to get an average y-value.
+                    tempY /= numberOfPoints > 0 ? (float)numberOfPoints : 1.0f;
+                    // Creates a temporary Vector.
+                    var tempVec = smoothTerrainList[i*zStep + j];
+                    // Adds said temporary vector to its proper position in the smoothTerrainList -List.
+                    smoothTerrainList[i*zStep + j] = new Vector3(tempVec.x, tempY, tempVec.z);
+                    // Sets this mask as filled.
+                    bMaskfilled[i, j] = true;
                 }
-
-                // This is in essence an if-check that makes sure that we do not continue making the points if there are no points in the current bucket,
-                // as that would give us an incorrect value (You cannot divide by "0" as that gives an error, and dividing by "1" returns the same number).
-                // /*if (buckets[i,j].Count > 0) {numPoints = buckets[i,j].Count;}
-                // else {numPoints = 1;}*/
-
-                // THESE TWO MEAN THE SAME, BUT THE ONE BELOW IS MORE EFFICIENT.   ^
-                var numberOfPoints = buckets[i, j].Count > 0 ? buckets[i, j].Count: 1;
-
-                // Find the middle value of the x-coordinate in the "square" in 'buckets'.
-                middleX = xMin + (deltaX / 2) + (deltaX * i);
-                // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
-                averageHeight /= numberOfPoints;
-                // Find the middle value of the z-coordinate in the "square" in 'buckets'.
-                middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
-
-                // Creates a final point for each square that is then added to a smoothTerrainList.
-                smoothTerrainList.Add(
-                    new Vector3(
-                    middleX,
-                    averageHeight,
-                    middleZ
-                    )
-                );
-                //Debug.LogWarning($"Point: {smoothTerrainList[^1]}");
             }
         }
     }
