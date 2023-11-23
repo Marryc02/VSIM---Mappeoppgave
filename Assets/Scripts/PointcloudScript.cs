@@ -333,13 +333,7 @@ public class PointcloudScript : MonoBehaviour
             {
                 // "?" == if-check   |   : = "if the previous is not true, then do the following:"
                 // Check if the current bucket actually has points in itself: If it does not then use the previous points' averageHeight.
-                //averageHeight = buckets[i, j].Count > 0 ? 0f: averageHeight;
-
-                // Skips squares without points in them. (The code tries to create arectangular grid)
-                if (buckets[i, j].Count <= 0)
-                {
-                    continue;
-                }
+                averageHeight = buckets[i, j].Count > 0 ? 0f: averageHeight;
 
                 // "Do this to each point that exists in the bucket".
                 // In other words: Loop through each "square" in each "row" and to this to its points.
