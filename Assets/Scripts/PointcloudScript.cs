@@ -26,7 +26,9 @@ public class PointcloudScript : MonoBehaviour
     string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
 
     // Used for deciding how many lines should be skipped when converting the initial document and making a smooth pointcloud.
-    float lineSkips = 25;
+    // NOTE: CHANGING THIS VALUE FROM "0" WILL DISTORT YOUR TERRAIN AS YOU WILL BE ACTIVELY SKIPPING SOME POINTS IN YOUR DOCUMENT:
+    // THIS IS BEST SUITED FOR ABSURDLY LARGE TERRAINS.
+    float lineSkips = 0;
 
     // Used to make the pointcloud look nice. Also helps make the triangleSurface smoot later.
     float xMin = 0; 
@@ -46,8 +48,8 @@ public class PointcloudScript : MonoBehaviour
     int xStep = 0; 
     int zStep = 0;
 
-    [SerializeField] float deltaX = 0; 
-    [SerializeField] float deltaZ = 0;
+    [SerializeField] float deltaX = 1; 
+    [SerializeField] float deltaZ = 1;
     
 
     // Runs before Start().
@@ -95,7 +97,7 @@ public class PointcloudScript : MonoBehaviour
             // Reads the first line of text.
             string line = readFile.ReadLine();
 
-            // An if-check that helps us determine how many lines we want to skip in the file. (I want fewer lines in the new terrain-file).
+            // An if-check that helps us determine how many lines we want to skip in the file.
             if (a >= lineSkips)
             {
                 // Makes a new list of strings with the name "pointValues".
@@ -176,7 +178,7 @@ public class PointcloudScript : MonoBehaviour
 
 
         // Translates the contents of mergedList to convertedList while taking offset from the scenes' origin into account. 
-        // (convertedList starts in the scenes origin).
+        // (convertedList starts in the scenes' origin).
 
         // Calculates the offset and puts it into a Vector3.
         var offset = new Vector3((xMin + xMax) / 2, (yMin + yMax) / 2, (zMin + zMax) / 2);
@@ -331,14 +333,13 @@ public class PointcloudScript : MonoBehaviour
             {
                 // "?" == if-check   |   : = "if the previous is not true, then do the following:"
                 // Check if the current bucket actually has points in itself: If it does not then use the previous points' averageHeight.
-                averageHeight = buckets[i, j].Count > 0 ? 0f: averageHeight;
+                //averageHeight = buckets[i, j].Count > 0 ? 0f: averageHeight;
 
-                // ^^^
-                // NOTE: I DID THIS SO THAT SOME OF THE POINTS (WHO ENDED UP WONKY DUE TO THE POINT DATA I RECIEVED FROM KARTVERKET NOT BEING ALIGNED PROPERLY TO THE X/Y/Z AXIS)
-                // WOULD STILL RECIEVE A "PROPER" HEIGHT, HOWEVER IT TURNED OUT SOMEWHAT WONKY REGARDLESS AND AS SUCH I BELIEVED USING IT WAS NOT WORTHWHILE.
-                // I COULD HAVE COME UP WITH A DIFFERENT SOLUTION, BUT I WANTED TO PRIORITIZE GETTING A FINISHED, 
-                // AND COMPLETE PRODUCT RATHER THAN WORK ON A PITCH-PERFECT SOLUTION OF THIS ONE; TINY, INSIGNIFICANT PROBLEM IN A SINGLE ASPECT OF THE PROJECT):
-                // IT HASNO EFFECT ON THE ACTUAL TASK AT HAND AND CAN BE CONSIDERED A MEASLY VISUAL BUG.
+                // Skips squares without points in them. (The code tries to create arectangular grid)
+                if (buckets[i, j].Count <= 0)
+                {
+                    continue;
+                }
 
                 // "Do this to each point that exists in the bucket".
                 // In other words: Loop through each "square" in each "row" and to this to its points.
@@ -350,11 +351,10 @@ public class PointcloudScript : MonoBehaviour
 
                 // This is in essence an if-check that makes sure that we do not continue making the points if there are no points in the current bucket,
                 // as that would give us an incorrect value (You cannot divide by "0" as that gives an error, and dividing by "1" returns the same number).
-
                 // /*if (buckets[i,j].Count > 0) {numPoints = buckets[i,j].Count;}
                 // else {numPoints = 1;}*/
 
-                // THESE MEAN THE SAME, BUT THE ONE BELOW IS MORE EFFICIENT :)   ^
+                // THESE TWO MEAN THE SAME, BUT THE ONE BELOW IS MORE EFFICIENT.   ^
                 var numberOfPoints = buckets[i, j].Count > 0 ? buckets[i, j].Count: 1;
 
                 // Find the middle value of the x-coordinate in the "square" in 'buckets'.
