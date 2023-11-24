@@ -333,28 +333,18 @@ public class PointcloudScript : MonoBehaviour
         {
             for (int j = 0; j < zStep; j++)
             {
-                // If there is no Vector3 in the "square", then:
-                if (buckets[i, j].Count <= 0)
+                // If the bucket has points in it, then:
+                if (buckets[i, j].Count > 0)
                 {
-                    bMaskfilled[i, j] = false;
+                    bMaskfilled[i, j] = true;
                 }
                 else
                 {
-                    bMaskfilled[i, j] = true;
+                    bMaskfilled[i, j] = false;
                 }
             }
         }
 
-        /*// Fills up the smoothTerrainList -List.
-        // Loop through the "rows" of the "plane" called 'buckets'.
-        for (int i = 0; i < xStep; i++)
-        {   
-            // Loop through the "squares" of the current "row" in 'buckets'.
-            for (int j = 0; j < zStep; j++)
-            {
-                smoothTerrainList.Add(new Vector3(0, 0, 0));
-            }
-        }*/
 
         float averageHeight = 0;
 
@@ -403,7 +393,9 @@ public class PointcloudScript : MonoBehaviour
                             middleZ
                         )
                     );
-                    //Debug.LogWarning($"Point: {smoothTerrainList[^1]}");
+
+                    // Resets averageHeight.
+                    averageHeight = 0;
                 }
             }
         }
@@ -413,16 +405,18 @@ public class PointcloudScript : MonoBehaviour
             for (int j = 0; j < zStep; j++)
             {
                 // If the mask is filled, and does not require further editing, then simply skip this double for-loop.
-                if (bMaskfilled[i, j])
+                if (bMaskfilled[i, j] == true)
                 {
                     continue;
                 }
                 else
                 {
                     // THIS IS HEAVILY INSPIRED BY ANDERS' CODE.
-                    int numberOfPoints = 0;
 
+                    int numberOfPoints = 0;
+                    // Used to find a proper y-value to the new points
                     var tempY = 0f;
+
                     // Compares the x-values of 10 neighbours in the x-direction (xStep) to get an accurate x-value.
                     for (int xn = i - 10; xn <= i + 10; xn++)
                     {
@@ -439,14 +433,17 @@ public class PointcloudScript : MonoBehaviour
                                 continue;
                             }
                             
-                            // adds the y-values of the x- and z- neighbours.
+                            // Adds the y-values of the x- and z- neighbours.
                             tempY += smoothTerrainList[xn*zStep + zn].y;
                             numberOfPoints++;
                         }
                     }
 
                     // Divides the temporary, new y-value on the amount of points to get an average y-value.
-                    tempY /= numberOfPoints > 0 ? (float)numberOfPoints : 1.0f;
+                    if (numberOfPoints > 0)
+                    {
+                        tempY /= numberOfPoints;
+                    }
                     // Creates a temporary Vector.
                     var tempVec = smoothTerrainList[i*zStep + j];
                     // Adds said temporary vector to its proper position in the smoothTerrainList -List.
