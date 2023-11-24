@@ -333,7 +333,11 @@ public class PointcloudScript : MonoBehaviour
             {
                 // "?" == if-check   |   : = "if the previous is not true, then do the following:"
                 // Check if the current bucket actually has points in itself: If it does not then use the previous points' averageHeight.
-                averageHeight = buckets[i, j].Count > 0 ? 0f: averageHeight;
+                // Resets averageHeight if there is a value in the bucket.
+                if (buckets[i, j].Count > 0)
+                {
+                    averageHeight = 0;
+                }
 
                 // "Do this to each point that exists in the bucket".
                 // In other words: Loop through each "square" in each "row" and to this to its points.
