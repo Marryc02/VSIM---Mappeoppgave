@@ -5,6 +5,8 @@ using System.Globalization;
 using System;
 using UnityEngine;
 using Unity.Jobs;
+using Unity.VisualScripting;
+using System.Drawing;
 
 
 // Most of this code was made by myself from scratch using the resource below, however I recieved significant help from Anders in the class;
@@ -13,6 +15,8 @@ using Unity.Jobs;
 
 public class PointcloudScript : MonoBehaviour
 {
+    public static PointcloudScript PointCInstance { get; private set; } 
+
     [SerializeField] bool bDataGenerated = true;
 
     string mergedFile = @"Assets/Resources/merged.txt";
@@ -42,12 +46,14 @@ public class PointcloudScript : MonoBehaviour
     int xStep = 0; 
     int zStep = 0;
 
-    [SerializeField] float deltaX = 1; 
-    [SerializeField] float deltaZ = 1;
+    public float deltaX = 1; 
+    public float deltaZ = 1;
     
 
     // Runs before Start().
     void Awake() {
+        PointCInstance = this;
+
         if (bDataGenerated)
         {   
             // Converts and adjusts the initial merged file into one that is centered around the origin of the projects' scene.

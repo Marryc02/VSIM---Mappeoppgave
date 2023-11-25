@@ -5,21 +5,57 @@ using System.Linq;
 using System.Globalization;
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
+using Unity.VisualScripting;
+using UnityEngine.UIElements;
+
 
 public class TriangleSurfaceScript : MonoBehaviour
 {   
+    [SerializeField] bool bGenerateTriangleSurface = false;
+    [SerializeField] Material terrainMaterial;
+
+
     string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
+
 
     // List containing the direct values of the "smoothTerrainFile -file".
     List<Vector3> vertices = new List<Vector3>();
+    List<int> indices = new List<int>();
 
-    void readTerrainFile(string input)
+    //Vector2[] UVs = new Vector2[3];
+
+
+    float xMin = 0; 
+    float xMax = 0;
+
+    float zMin = 0; 
+    float zMax = 0;
+
+    float deltaX = 1;
+    float deltaZ = 1;
+
+    int xStep = 0;
+    int zStep = 0;
+
+
+    void Awake() {
+        if (bGenerateTriangleSurface)
+        {
+            fetchVertices(smoothTerrainFile);
+            fetchIndices();
+
+            generateSurface();
+        }
+    }
+
+    void fetchVertices(string input)
     {
         // Pass the file path and file name to the StreamReader constructor.
         StreamReader readFile = new StreamReader(input);
 
         // Finds out how many lines there are in the inputted .txt-document.
-        var lineCount = File.ReadLines(input).Count();
+        var lineCount = int.Parse(readFile.ReadLine());
         Debug.Log("Amount of lines to be read into the vertices list: " + lineCount);
         
 
@@ -43,17 +79,102 @@ public class TriangleSurfaceScript : MonoBehaviour
             vertices.Add(
                 new Vector3(
                     float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat),
-                    float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat),
-                    float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat)
+                    float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat),
+                    float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat)
                 )
             );
         }
+    }
 
-        
-    }  
+    void fetchIndices()
+    {
+        // Finds the smallest and largest values 
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            // Assigns min and max values of x, y and z after checking them.
+            // x
+            if (vertices[i].x < xMin)
+            {
+                xMin = vertices[i].x;
+            }
+            else if (vertices[i].x > xMax)
+            {
+                xMax = vertices[i].x;
+            }
+
+            // z
+            if (vertices[i].z < zMin)
+            {
+                zMin = vertices[i].z;
+            }
+            else if (vertices[i].z > zMax)
+            {
+                zMax = vertices[i].z;
+            }
+        }
+
+
+        // Calculates xStep and zStep
+        xStep = (int)Mathf.Ceil((xMax - xMin) / deltaX);
+        zStep = (int)Mathf.Ceil((zMax - zMin) / deltaZ);
+
+
+        // Fills up the indices -List.
+        for (int i = 0; i < xStep; i++)
+        {
+            for (int j = 0; j < zStep; j++)
+            {
+                // First triangle
+                indices.Add(j);
+                indices.Add(j + 1 + i);
+                indices.Add(j + 1);
+                
+                // Second triangle
+                indices.Add(j);
+                indices.Add(j + 1+ i);
+                indices.Add(i + 1);
+            }
+        }
+    }
+
+    void generateSurface()
+    {
+        // Initializes mesh variables
+        var meshFilter = gameObject.AddComponent<MeshFilter>();
+        var meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+        meshFilter.sharedMesh = generateMesh();
+        meshRenderer.sharedMaterial = terrainMaterial;
+    }
+
+    Mesh generateMesh()
+    {
+
+        Mesh triangleSurfaceMesh = new Mesh();
+        triangleSurfaceMesh.indexFormat = IndexFormat.UInt32;
+
+        // Assigns triangles and vertices to our mesh.
+        triangleSurfaceMesh.vertices = vertices.ToArray();
+        triangleSurfaceMesh.triangles = indices.ToArray();
+
+        // Recalculates normals and tangents for the mesh.
+        triangleSurfaceMesh.RecalculateNormals();
+        triangleSurfaceMesh.RecalculateTangents();
+
+        return triangleSurfaceMesh;
+    }
 }
 
-public class Triangles
+/*public class Triangle()
 {
+    public Triangle(int i0, int i1, int i2, int triangle0, int triangle1, int triangle2, int triangleIndex)
+    {
+        indices = new[]{i0, i1, i2};
+        neighbours = new[]{triangle0, triangle1, triangle2};
+        index = triangleIndex;
+    }
 
-}
+    public int[]indices;
+    public int[]neighbours;
+    public int index;
+}*/

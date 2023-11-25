@@ -46,7 +46,7 @@ public class RenderScript : MonoBehaviour
 
         if (fileHasBeenChosen == false)
         {
-            Debug.Log("You did not select a terrain to render properly!");
+            Debug.Log("You did not select a pointcloud to render.");
         }
         else
         {
@@ -88,7 +88,7 @@ public class RenderScript : MonoBehaviour
                         float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat)
                     )
                 );
-        }
+            }
         }
         
 
