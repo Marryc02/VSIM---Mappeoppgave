@@ -240,10 +240,10 @@ public class PointcloudScript : MonoBehaviour
         // who themselves act as a List of Vector3's.
         List<Vector3>[,] buckets = new List<Vector3>[xStep, zStep];
         // Adds Vector3's to the "squares" inside the "rows" of the "plane" called 'buckets'.
-            for (var j = 0; j < xStep; j++) {
-                for (var k = 0; k < zStep; k++) {
+            for (int i = 0; i < xStep; i++) {
+                for (int j = 0; j < zStep; j++) {
                     // Add a List of Vector3's to the current "square" (k) in the current "row" (j).
-                    buckets[j, k] = new List<Vector3>();
+                    buckets[i, j] = new List<Vector3>();
                 }
             }
 
