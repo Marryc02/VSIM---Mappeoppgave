@@ -302,6 +302,7 @@ public class PointcloudScript : MonoBehaviour
         Debug.Log("Made it past the a-b -loop!");
 
 
+        /*
         // THIS IS INSPIRED BY ANDERS' CODE.
         //// ---------------------------------------------------------------------------------------------------------------------------------
         // Makes a 2d array of bools which will be used later to determine which buckets are empty and which are not.
@@ -322,6 +323,7 @@ public class PointcloudScript : MonoBehaviour
             }
         }
         //// ---------------------------------------------------------------------------------------------------------------------------------
+        */
 
         Debug.Log("xStep: " + xStep + "  |  " + "zStep: " + zStep + "  |  " + "buckets: " + buckets[xStep, zStep].Count);
         float averageHeight = 0;
@@ -336,7 +338,7 @@ public class PointcloudScript : MonoBehaviour
             for (int j = 0; j < zStep; j++)
             {   
                 // If the mask is filled, then do this:
-                if (bMaskfilled[i, j])
+                if (/*bMaskfilled[i, j]*/ buckets[i, j].Count > 0)
                 {
                     // THIS IS INSPIRED BY ANDERS' CODE.
                     //// ---------------------------------------------------------------------------------------------------------------------
@@ -394,7 +396,7 @@ public class PointcloudScript : MonoBehaviour
             for (int j = 0; j < zStep; j++)
             {   
                 // If the mask is filled, then do this:
-                if (!bMaskfilled[i, j])
+                if (/*!bMaskfilled[i, j]*/ buckets[i, j].Count <= 0)
                 {
                     float tempY = 0;
 
@@ -411,7 +413,7 @@ public class PointcloudScript : MonoBehaviour
                         // Compares the z-values of 20 neighbours in the z-direction (zStep) to get an accurate z-value.
                         for (int zN = j - 20; zN <= j + 20; zN++)
                         {
-                            if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
+                            if (zN < 0 || zN >= zStep || /*!bMaskfilled[xN, zN]*/ buckets[xN, zN].Count <= 0) 
                             {
                                 continue;
                             }
@@ -433,7 +435,7 @@ public class PointcloudScript : MonoBehaviour
                     // Adds said temporary vector to its proper position in the smoothTerrainList -List.
                     smoothTerrainList[i][j] = new Vector3(tempVec.x, tempY, tempVec.z);
                     // Sets this mask as filled.
-                    bMaskfilled[i, j] = true;
+                    /*bMaskfilled[i, j] = true;*/
                     numberOfComparisons = 0;
                 }
             }
