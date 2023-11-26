@@ -88,7 +88,7 @@ public class TriangleSurfaceScript : MonoBehaviour
 
     void fetchIndices()
     {
-        // Finds the smallest and largest values 
+        /*// Finds the smallest and largest values 
         for (int i = 0; i < vertices.Count; i++)
         {
             // Assigns min and max values of x, y and z after checking them.
@@ -124,17 +124,20 @@ public class TriangleSurfaceScript : MonoBehaviour
         {
             for (int j = 0; j < zStep; j++)
             {
+                int k = j + (zStep * i);
                 // First triangle
-                indices.Add(j);
-                indices.Add(j + 1 + i);
-                indices.Add(j + 1);
+                indices.Add(k);
+                indices.Add(k + 1 + zStep);
+                indices.Add(k + 1);
                 
                 // Second triangle
-                indices.Add(j);
-                indices.Add(j + 1+ i);
-                indices.Add(i + 1);
+                indices.Add(k);
+                indices.Add(k + zStep);
+                indices.Add(k + 1 + zStep);
             }
-        }
+        }*/
+
+        
     }
 
     void generateSurface()
@@ -149,7 +152,6 @@ public class TriangleSurfaceScript : MonoBehaviour
 
     Mesh generateMesh()
     {
-
         Mesh triangleSurfaceMesh = new Mesh();
         triangleSurfaceMesh.indexFormat = IndexFormat.UInt32;
 
