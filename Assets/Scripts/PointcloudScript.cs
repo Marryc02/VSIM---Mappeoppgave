@@ -323,7 +323,7 @@ public class PointcloudScript : MonoBehaviour
         }
         //// ---------------------------------------------------------------------------------------------------------------------------------
 
-        
+        Debug.Log("xStep: " + xStep + "  |  " + "zStep: " + zStep + "  |  " + "buckets: " + buckets[xStep, zStep].Count);
         float averageHeight = 0;
         var numberOfPoints = 0;
         var numberOfComparisons = 0;

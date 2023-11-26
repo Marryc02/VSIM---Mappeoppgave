@@ -26,19 +26,6 @@ public class TriangleSurfaceScript : MonoBehaviour
     //Vector2[] UVs = new Vector2[3];
 
 
-    float xMin = 0; 
-    float xMax = 0;
-
-    float zMin = 0; 
-    float zMax = 0;
-
-    float deltaX = 1;
-    float deltaZ = 1;
-
-    int xStep = 0;
-    int zStep = 0;
-
-
     void Awake() {
         if (bGenerateTriangleSurface)
         {
@@ -137,7 +124,7 @@ public class TriangleSurfaceScript : MonoBehaviour
             }
         }*/
 
-        
+
     }
 
     void generateSurface()
