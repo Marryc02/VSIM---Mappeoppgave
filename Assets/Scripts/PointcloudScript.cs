@@ -15,7 +15,7 @@ using System.Drawing;
 
 public class PointcloudScript : MonoBehaviour
 {
-    [SerializeField] bool bDataGenerated = true;
+    [SerializeField] bool bGenerateData = true;
 
     string mergedFile = @"Assets/Resources/merged.txt";
     string terrainFile = @"Assets/Resources/terrain.txt";
@@ -30,7 +30,7 @@ public class PointcloudScript : MonoBehaviour
     // List that contains the final converted values for the verticesFile-file.
     List<Vector3>[,] verticesList;
     // List that contains the indices values of the verticesList -List.
-    List<int> indices = new List<int>();
+    List<int> indicesList = new List<int>();
 
 
     // Used for deciding how many lines should be skipped when converting the initial merged file and making a smooth pointcloud.
@@ -57,7 +57,7 @@ public class PointcloudScript : MonoBehaviour
 
     // Runs before Start().
     void Awake() {
-        if (bDataGenerated)
+        if (bGenerateData)
         {   
             // Converts and adjusts the initial merged file into one that is centered around the origin of the projects' scene.
             ConvertMerged(mergedFile);
@@ -77,8 +77,9 @@ public class PointcloudScript : MonoBehaviour
             writeVertices(verticesList, verticesFile);
             Debug.Log("Successfully wrote a smooth terrain file.");
 
-            // Writes indices over to a file.
-            writeIndices();
+            // Fetches and writes indices.
+            fetchAndWriteIndices();
+            Debug.Log("Successfully fetched and wrote indices.");
         }
     }
     
@@ -264,6 +265,7 @@ public class PointcloudScript : MonoBehaviour
             // Loop through the "squares" of the current "row" in 'buckets'.
             for (int j = 0; j < zStep; j++)
             {   
+                verticesList[i, j] = new List<Vector3>();
                 // If the mask is filled, then do this:
                 if (bMaskfilled[i, j])
                 {
@@ -289,7 +291,7 @@ public class PointcloudScript : MonoBehaviour
                     }
                     //// ---------------------------------------------------------------------------------------------------------------------
                     
-                    // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
+                    /*// Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
                     averageHeight /= numberOfPoints;
                     // Find the middle value of the x-coordinate in the "square" in 'buckets'.
                     middleX = xMin + (deltaX / 2) + (deltaX * i);
@@ -303,23 +305,23 @@ public class PointcloudScript : MonoBehaviour
                             averageHeight,
                             middleZ
                         )
-                    );
+                    );*/
                 }
                 // If the mask is otherwise not filled, then do this:
                 else if (!bMaskfilled[i, j])
                 {
                     // THIS TAKES A LOT OF INSPIRATION FROM ANDERS' CODE
                     //// ---------------------------------------------------------------------------------------------------------------------
-                    // Compares the x-values of 20 neighbours in the x-direction (xStep) to get an accurate x-value.
-                    for (int xN = i - 20; xN <= i + 20; xN++)
+                    // Compares the x-values of 5 neighbours in the x-direction (xStep) to get an accurate x-value.
+                    for (int xN = i - 5; xN <= i + 5; xN++)
                     {
                         if (xN < 0 || xN >= xStep) 
                         {
                             continue;
                         }
                         
-                        // Compares the z-values of 20 neighbours in the z-direction (zStep) to get an accurate z-value.
-                        for (int zN = j - 20; zN <= j + 20; zN++)
+                        // Compares the z-values of 5 neighbours in the z-direction (zStep) to get an accurate z-value.
+                        for (int zN = j - 5; zN <= j + 5; zN++)
                         {
                             if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
                             {
@@ -334,20 +336,55 @@ public class PointcloudScript : MonoBehaviour
                         counter = 0;
                     }
                     //// ---------------------------------------------------------------------------------------------------------------------
-
-                    // Divides the temporary, new y-value on the amount of points to get an average y-value.
+                    
+                    /*// Divides the temporary, new y-value on the amount of points to get an average y-value.
                     if (numberOfPoints > 0)
                     {
                         averageHeight /= numberOfPoints;
                     }
-                    // NOTE: USING "[0]" IS OKAY HERE BECAUSE WE ONLY WANT EACH "SQUARE" IN THE "PLANE" TO HAVE A SINGULAR POINT IN IT ANYWAY.
+
+                    // Find the middle value of the x-coordinate in the "square" in 'buckets'.
+                    middleX = xMin + (deltaX / 2) + (deltaX * i);
+                    // Find the middle value of the z-coordinate in the "square" in 'buckets'.
+                    middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
+
+                    // Creates a final point for each square that is then added to a verticesList.
+                    verticesList[i, j].Add(
+                        new Vector3(
+                            middleX,
+                            averageHeight,
+                            middleZ
+                        )
+                    );*/
+                    
+                    /*// NOTE: USING "[0]" IS OKAY HERE BECAUSE WE ONLY WANT EACH "SQUARE" IN THE "PLANE" TO HAVE A SINGULAR POINT IN IT ANYWAY.
                     // Creates a temporary Vector.
-                    Vector3 tempVec = verticesList[i, j][0];
+                    var tempVec = verticesList[i, j][0];
                     // Adds said temporary vector to its proper position in the verticesList -List.
-                    verticesList[i, j][0] = new Vector3(tempVec.x, averageHeight, tempVec.z);
+                    verticesList[i, j][0] = new Vector3(tempVec.x, averageHeight, tempVec.z);*/
                     // Sets this mask as filled.
                     bMaskfilled[i, j] = true;
                 }
+
+                // Divides the temporary, new y-value on the amount of points to get an average y-value.
+                if (numberOfPoints > 0)
+                {
+                    averageHeight /= numberOfPoints;
+                }
+
+                // Find the middle value of the x-coordinate in the "square" in 'buckets'.
+                middleX = xMin + (deltaX / 2) + (deltaX * i);
+                // Find the middle value of the z-coordinate in the "square" in 'buckets'.
+                middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
+
+                // Creates a final point for each square that is then added to a verticesList.
+                verticesList[i, j].Add(
+                    new Vector3(
+                        middleX,
+                        averageHeight,
+                        middleZ
+                    )
+                );
 
                 // Resets some values.
                 numberOfPoints = 0;
@@ -356,6 +393,45 @@ public class PointcloudScript : MonoBehaviour
         }
     }
 
+    // FETCHES INDICES.
+    void fetchAndWriteIndices()
+    {
+        // Fills up the indices -List.
+        for (int i = 0; i < xStep; i++)
+        {
+            for (int j = 0; j < zStep; j++)
+            {
+                // First triangle
+                indicesList.Add(j);
+                indicesList.Add(j + zStep);
+                indicesList.Add(j + zStep + 1);
+                
+                // Second triangle
+                indicesList.Add(j);
+                indicesList.Add(j + zStep + 1);
+                indicesList.Add(j + 1);
+            }
+        }
+
+        // Gets the amount of indices and divides by 3 for every future triangle.
+        var indicesListSize = indicesList.Count / 3;
+
+        // Puts the amount of lines in the inputted List at the top of the output-file.
+        File.WriteAllText(indicesFile, indicesListSize.ToString() + "\n");
+
+        // Loops throught the inputted List and formats each vector into a string, which is then printed out to the output-file.
+        for (int i = 0; i < indicesListSize; i++)
+        {
+            // Replaces ","'s with a ".".
+            var outputLine = indicesList[i] + " " + indicesList[i + 1] + " " + indicesList[i + 2];
+
+            // Writes the current line over to a file.
+            using (StreamWriter writeFile = File.AppendText(indicesFile))
+            {
+                writeFile.WriteLine(outputLine);
+            }
+        }
+    }
 
     // WRITES THE POINTCLOUD OVER TO A FILE.
     void writeFile(List<Vector3> input, string output)
@@ -403,27 +479,8 @@ public class PointcloudScript : MonoBehaviour
             }
         }
     }
-
-    void writeIndices()
-    {
-        // Fills up the indices -List.
-        for (int i = 0; i < xStep; i++)
-        {
-            for (int j = 0; j < zStep; j++)
-            {
-                // First triangle
-                indices.Add(j);
-                indices.Add(j + zStep);
-                indices.Add(j + zStep + 1);
-                
-                // Second triangle
-                indices.Add(j);
-                indices.Add(j + zStep + 1);
-                indices.Add(j + 1);
-            }
-        }
-    }
-
+    
+    // CALCULATES MIN- AND MAX VALUES.
     void calcMinAndMaxValues(List<Vector3> input)
     {
         // Finds the smallest and largest values 
@@ -450,4 +507,5 @@ public class PointcloudScript : MonoBehaviour
             else if (input[i].z > zMax) {zMax = input[i].z;}
         }
     }
+    
 }

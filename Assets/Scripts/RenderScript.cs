@@ -14,7 +14,7 @@ public class RenderScript : MonoBehaviour
 
     string chosenFile;
     string terrainFile = @"Assets/Resources/terrain.txt";
-    string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
+    string verticesFile = @"Assets/Resources/vertices.txt";
     bool fileHasBeenChosen = true;
 
     List<Vector3> points = new List<Vector3>();
@@ -37,7 +37,7 @@ public class RenderScript : MonoBehaviour
         }
         else if (regularTerrain == false && smoothTerrain == true)
         {
-            chosenFile = smoothTerrainFile;
+            chosenFile = verticesFile;
         }
         else
         {
@@ -89,22 +89,21 @@ public class RenderScript : MonoBehaviour
                     )
                 );
             }
+
+            /*
+            Code below obtained form Unity's documentation on RenderPrimitives
+            https://docs.unity3d.com/ScriptReference/Graphics.RenderPrimitives.html
+            */
+            meshTriangles = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.triangles.Length, sizeof(int));
+            meshTriangles.SetData(mesh.triangles);
+        
+            meshPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, pointsCount, 3 * sizeof(float));
+            meshPositions.SetData(points.ToArray());
+            points.Clear();
+
+            vertexPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.vertices.Length, 3 * sizeof(float));
+            vertexPositions.SetData(mesh.vertices);
         }
-        
-
-        /*
-        Code below obtained form Unity's documentation on RenderPrimitives
-        https://docs.unity3d.com/ScriptReference/Graphics.RenderPrimitives.html
-        */
-        meshTriangles = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.triangles.Length, sizeof(int));
-        meshTriangles.SetData(mesh.triangles);
-        
-        meshPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, pointsCount, 3 * sizeof(float));
-        meshPositions.SetData(points.ToArray());
-        points.Clear();
-
-        vertexPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.vertices.Length, 3 * sizeof(float));
-        vertexPositions.SetData(mesh.vertices);
     }
 
 

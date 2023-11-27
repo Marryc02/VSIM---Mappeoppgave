@@ -16,7 +16,7 @@ public class TriangleSurfaceScript : MonoBehaviour
     [SerializeField] Material terrainMaterial;
 
 
-    string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
+    string verticesFile = @"Assets/Resources/vertices.txt";
 
 
     // List containing the direct values of the "smoothTerrainFile -file".
@@ -26,7 +26,7 @@ public class TriangleSurfaceScript : MonoBehaviour
     //Vector2[] UVs = new Vector2[3];
 
 
-    float xMin = 0; 
+    /*float xMin = 0; 
     float xMax = 0;
 
     float zMin = 0; 
@@ -36,13 +36,13 @@ public class TriangleSurfaceScript : MonoBehaviour
     float deltaZ = 1;
 
     int xStep = 0;
-    int zStep = 0;
+    int zStep = 0;*/
 
 
     void Awake() {
         if (bGenerateTriangleSurface)
         {
-            fetchVertices(smoothTerrainFile);
+            fetchVertices(verticesFile);
             fetchIndices();
 
             generateSurface();
