@@ -420,14 +420,14 @@ public class PointcloudScript : MonoBehaviour
             for (int j = 0; j < zStep; j++)
             {
                 // First triangle
-                indicesList.Add(j);
-                indicesList.Add(j + zStep);
-                indicesList.Add(j + zStep + 1);
+                indicesList.Add(j + (i * zStep));
+                indicesList.Add(j + ((i + 1) * zStep));
+                indicesList.Add(j + 1 + ((i + 1) * zStep));
                 
                 // Second triangle
-                indicesList.Add(j);
-                indicesList.Add(j + zStep + 1);
-                indicesList.Add(j + 1);
+                indicesList.Add(j + (i * zStep));
+                indicesList.Add(j + 1 + ((i + 1) * zStep));
+                indicesList.Add(j + 1 + (i * zStep));
             }
         }
 
