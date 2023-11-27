@@ -255,7 +255,7 @@ public class PointcloudScript : MonoBehaviour
         
         float averageHeight = 0;
         var numberOfPoints = 0;
-        var counter = 0;
+        //var counter = 0;
         verticesList = new List<Vector3>[xStep, zStep];
 
         // GENERATES THE POINTS IN THE SMOOTH "PLANE". ASSIGNS "0" AS THE Y-VALUE FOR EMPTY "SQUARES".
@@ -310,9 +310,86 @@ public class PointcloudScript : MonoBehaviour
                 // If the mask is otherwise not filled, then do this:
                 else if (!bMaskfilled[i, j])
                 {
+                    int comparisonValue = 5;
+
+                    if (i + comparisonValue < xStep)
+                    {
+                        for (int xN = i; xN == i + comparisonValue; xN++)
+                        {
+                            if (j + comparisonValue < zStep)
+                            {
+                                for (int zN = j; zN == j + comparisonValue; zN++)
+                                {
+                                    if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
+                                    {
+                                        continue;
+                                    }
+
+                                    // Adds the y-values of the x- and z- neighbours.
+                                    averageHeight += verticesList[i, j][zN].y;
+                                    numberOfPoints++;
+                                }
+                            }
+                            else if (j + comparisonValue > zStep)
+                            {
+                                for (int zN = j; zN == j - comparisonValue; zN--)
+                                {
+                                    if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
+                                    {
+                                        continue;
+                                    }
+
+                                    // Adds the y-values of the x- and z- neighbours.
+                                    averageHeight += verticesList[i, j][zN].y;
+                                    numberOfPoints++;
+                                }
+                            }
+
+                            
+                        }
+                    }
+                    else if (i + comparisonValue > xStep)
+                    {
+                        for (int xN = i; xN == i - comparisonValue; xN--)
+                        {
+                            if (j + comparisonValue < zStep)
+                            {
+                                for (int zN = j; zN == j + comparisonValue; zN++)
+                                {
+                                    if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
+                                    {
+                                        continue;
+                                    }
+
+                                    // Adds the y-values of the x- and z- neighbours.
+                                    averageHeight += verticesList[i, j][zN].y;
+                                    numberOfPoints++;
+                                }
+                            }
+                            else if (j + comparisonValue > zStep)
+                            {
+                                for (int zN = j; zN == j - comparisonValue; zN--)
+                                {
+                                    if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
+                                    {
+                                        continue;
+                                    }
+
+                                    // Adds the y-values of the x- and z- neighbours.
+                                    averageHeight += verticesList[i, j][zN].y;
+                                    numberOfPoints++;
+                                }
+                            }                            
+                        }
+                    }
+                    else
+                    {
+                        averageHeight = 0;
+                        numberOfPoints++;
+                    }
                     // THIS TAKES A LOT OF INSPIRATION FROM ANDERS' CODE
                     //// ---------------------------------------------------------------------------------------------------------------------
-                    // Compares the x-values of 5 neighbours in the x-direction (xStep) to get an accurate x-value.
+                    /*// Compares the x-values of 5 neighbours in the x-direction (xStep) to get an accurate x-value.
                     for (int xN = i - 5; xN <= i + 5; xN++)
                     {
                         if (xN < 0 || xN >= xStep) 
@@ -334,7 +411,30 @@ public class PointcloudScript : MonoBehaviour
                             counter++;
                         }
                         counter = 0;
-                    }
+                    }*/
+                    // Compares the x values of (i + 5) amount of neighbours in the x-direction (xStep) to get an accurate x-value.
+                    /*for (int xN = i; xN < i + comparisonValue; xN++)
+                    {
+                        if (xN < 0 || xN >= xStep) 
+                        {
+                            continue;
+                        }
+
+                        // Compares the z values of (j + 5) amount of neighbours in the z-direction (zStep) to get an accurate z-value.
+                        for (int zN = j; zN <= j + 5; zN++)
+                        {
+                            if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
+                            {
+                                continue;
+                            }
+                            
+                            // Adds the y-values of the x- and z- neighbours.
+                            averageHeight += verticesList[i, j][zN].y;
+                            numberOfPoints++;
+                            //counter++;
+                        }
+                        //counter = 0;
+                    }*/
                     //// ---------------------------------------------------------------------------------------------------------------------
                     
                     /*// Divides the temporary, new y-value on the amount of points to get an average y-value.
