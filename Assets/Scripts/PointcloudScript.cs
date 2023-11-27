@@ -290,26 +290,17 @@ public class PointcloudScript : MonoBehaviour
                         numberOfPoints = 1;
                     }
                     //// ---------------------------------------------------------------------------------------------------------------------
-                    
-                    /*// Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
-                    averageHeight /= numberOfPoints;
-                    // Find the middle value of the x-coordinate in the "square" in 'buckets'.
-                    middleX = xMin + (deltaX / 2) + (deltaX * i);
-                    // Find the middle value of the z-coordinate in the "square" in 'buckets'.
-                    middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
-
-                    // Creates a final point for each square that is then added to a verticesList.
-                    verticesList[i, j].Add(
-                        new Vector3(
-                            middleX,
-                            averageHeight,
-                            middleZ
-                        )
-                    );*/
                 }
                 // If the mask is otherwise not filled, then do this:
                 else if (!bMaskfilled[i, j])
                 {
+                    // Despite my many hard attempts I did not manage to get this part of the code to work.
+                    // I tried having the "squares" that did not contain points simply borrow the height from their neighbouring points
+                    // assuming that they their "sqaure" was filled.
+                    // I am aware that this is not needed to finish this task of the folder assignment,
+                    // but it would have been nice if I had gotten this to work.
+
+                    /*
                     int comparisonValue = 5;
 
                     if (i + comparisonValue < xStep)
@@ -387,82 +378,9 @@ public class PointcloudScript : MonoBehaviour
                         averageHeight = 0;
                         numberOfPoints++;
                     }
-                    // THIS TAKES A LOT OF INSPIRATION FROM ANDERS' CODE
-                    //// ---------------------------------------------------------------------------------------------------------------------
-                    /*// Compares the x-values of 5 neighbours in the x-direction (xStep) to get an accurate x-value.
-                    for (int xN = i - 5; xN <= i + 5; xN++)
-                    {
-                        if (xN < 0 || xN >= xStep) 
-                        {
-                            continue;
-                        }
-                        
-                        // Compares the z-values of 5 neighbours in the z-direction (zStep) to get an accurate z-value.
-                        for (int zN = j - 5; zN <= j + 5; zN++)
-                        {
-                            if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
-                            {
-                                continue;
-                            }
-                            
-                            // Adds the y-values of the x- and z- neighbours.
-                            averageHeight += verticesList[i, j][counter].y;
-                            numberOfPoints++;
-                            counter++;
-                        }
-                        counter = 0;
-                    }*/
-                    // Compares the x values of (i + 5) amount of neighbours in the x-direction (xStep) to get an accurate x-value.
-                    /*for (int xN = i; xN < i + comparisonValue; xN++)
-                    {
-                        if (xN < 0 || xN >= xStep) 
-                        {
-                            continue;
-                        }
+                    */
 
-                        // Compares the z values of (j + 5) amount of neighbours in the z-direction (zStep) to get an accurate z-value.
-                        for (int zN = j; zN <= j + 5; zN++)
-                        {
-                            if (zN < 0 || zN >= zStep || !bMaskfilled[xN, zN]) 
-                            {
-                                continue;
-                            }
-                            
-                            // Adds the y-values of the x- and z- neighbours.
-                            averageHeight += verticesList[i, j][zN].y;
-                            numberOfPoints++;
-                            //counter++;
-                        }
-                        //counter = 0;
-                    }*/
-                    //// ---------------------------------------------------------------------------------------------------------------------
-                    
-                    /*// Divides the temporary, new y-value on the amount of points to get an average y-value.
-                    if (numberOfPoints > 0)
-                    {
-                        averageHeight /= numberOfPoints;
-                    }
-
-                    // Find the middle value of the x-coordinate in the "square" in 'buckets'.
-                    middleX = xMin + (deltaX / 2) + (deltaX * i);
-                    // Find the middle value of the z-coordinate in the "square" in 'buckets'.
-                    middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
-
-                    // Creates a final point for each square that is then added to a verticesList.
-                    verticesList[i, j].Add(
-                        new Vector3(
-                            middleX,
-                            averageHeight,
-                            middleZ
-                        )
-                    );*/
-                    
-                    /*// NOTE: USING "[0]" IS OKAY HERE BECAUSE WE ONLY WANT EACH "SQUARE" IN THE "PLANE" TO HAVE A SINGULAR POINT IN IT ANYWAY.
-                    // Creates a temporary Vector.
-                    var tempVec = verticesList[i, j][0];
-                    // Adds said temporary vector to its proper position in the verticesList -List.
-                    verticesList[i, j][0] = new Vector3(tempVec.x, averageHeight, tempVec.z);*/
-                    // Sets this mask as filled.
+                    averageHeight = 0;
                     bMaskfilled[i, j] = true;
                 }
 
