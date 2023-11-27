@@ -7,7 +7,7 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class RenderScript : MonoBehaviour
+public class PointcloudRenderScript : MonoBehaviour
 {
     [SerializeField] bool regularTerrain = true;
     [SerializeField] bool smoothTerrain = false;

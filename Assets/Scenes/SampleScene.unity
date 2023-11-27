@@ -319,7 +319,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2074498323}
   - component: {fileID: 2074498325}
-  - component: {fileID: 2074498322}
+  - component: {fileID: 2074498326}
   - component: {fileID: 2074498324}
   m_Layer: 0
   m_Name: PlaceholderObject
@@ -328,22 +328,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2074498322
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2074498320}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ec590055284add44b799c21ae91b899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  regularTerrain: 1
-  smoothTerrain: 0
-  material: {fileID: 2100000, guid: 46237739a51ac694db32540b390400a3, type: 2}
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &2074498323
 Transform:
   m_ObjectHideFlags: 0
@@ -371,7 +355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c025606f2a3218a46878b70405461b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bGenerateTriangleSurface: 0
+  bGenerateTriangleSurface: 1
   terrainMaterial: {fileID: 2100000, guid: 3fd0a01c127e9444190d2a7a41028612, type: 2}
 --- !u!114 &2074498325
 MonoBehaviour:
@@ -386,6 +370,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bGenerateData: 1
+--- !u!114 &2074498326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074498320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ec590055284add44b799c21ae91b899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  regularTerrain: 0
+  smoothTerrain: 1
+  material: {fileID: 2100000, guid: 46237739a51ac694db32540b390400a3, type: 2}
+  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
