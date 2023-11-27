@@ -88,53 +88,7 @@ public class TriangleSurfaceScript : MonoBehaviour
 
     void fetchIndices()
     {
-        // Finds the smallest and largest values 
-        for (int i = 0; i < vertices.Count; i++)
-        {
-            // Assigns min and max values of x, y and z after checking them.
-            // x
-            if (vertices[i].x < xMin)
-            {
-                xMin = vertices[i].x;
-            }
-            else if (vertices[i].x > xMax)
-            {
-                xMax = vertices[i].x;
-            }
-
-            // z
-            if (vertices[i].z < zMin)
-            {
-                zMin = vertices[i].z;
-            }
-            else if (vertices[i].z > zMax)
-            {
-                zMax = vertices[i].z;
-            }
-        }
-
-
-        // Calculates xStep and zStep
-        xStep = (int)Mathf.Ceil((xMax - xMin) / deltaX);
-        zStep = (int)Mathf.Ceil((zMax - zMin) / deltaZ);
-
-
-        // Fills up the indices -List.
-        for (int i = 0; i < xStep; i++)
-        {
-            for (int j = 0; j < zStep; j++)
-            {
-                // First triangle
-                indices.Add(j);
-                indices.Add(j + 1 + i);
-                indices.Add(j + 1);
-                
-                // Second triangle
-                indices.Add(j);
-                indices.Add(j + 1+ i);
-                indices.Add(i + 1);
-            }
-        }
+        
     }
 
     void generateSurface()

@@ -15,20 +15,30 @@ using System.Drawing;
 
 public class PointcloudScript : MonoBehaviour
 {
-    public static PointcloudScript PointCInstance { get; private set; } 
-
     [SerializeField] bool bDataGenerated = true;
 
     string mergedFile = @"Assets/Resources/merged.txt";
     string terrainFile = @"Assets/Resources/terrain.txt";
-    string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
+    string verticesFile = @"Assets/Resources/vertices.txt";
+    string indicesFile = @"Assets/Resources/indices.txt";
+
+
+    // List containing the direct values of the "mergedFile-file".
+    List<Vector3> mergedList = new List<Vector3>();
+    // List that contains the final converted values for the terrainFile-file.
+    List<Vector3> convertedList = new List<Vector3>();
+    // List that contains the final converted values for the verticesFile-file.
+    List<Vector3>[,] verticesList;
+    // List that contains the indices values of the verticesList -List.
+    List<int> indices = new List<int>();
+
 
     // Used for deciding how many lines should be skipped when converting the initial merged file and making a smooth pointcloud.
     // NOTE: CHANGING THIS VALUE FROM "0" WILL DISTORT YOUR TERRAIN AS YOU WILL BE ACTIVELY SKIPPING SOME POINTS IN YOUR DOCUMENT:
     // THIS IS BEST SUITED FOR ABSURDLY LARGE TERRAINS.
     float lineSkips = 0;
 
-    // Used to make the pointcloud look nice. Also helps make the triangleSurface smooth later.
+    // Used to make the pointcloud look nice. Also helps make the triangleSurface smooth later among other things.
     float xMin = 0; 
     float xMax = 0;
 
@@ -38,39 +48,37 @@ public class PointcloudScript : MonoBehaviour
     float zMin = 0; 
     float zMax = 0;
 
-    // List that contains the final converted values for the terrainFile-file.
-    List<Vector3> convertedList = new List<Vector3>();
-    // List that contains the final converted values for the smoothTerrainFile-file.
-    List<List<Vector3>> smoothTerrainList = new List<List<Vector3>>();
-
     int xStep = 0; 
     int zStep = 0;
 
-    public float deltaX = 1; 
-    public float deltaZ = 1;
-    
+    float deltaX = 1; 
+    float deltaZ = 1;
+
 
     // Runs before Start().
     void Awake() {
-        PointCInstance = this;
-
         if (bDataGenerated)
         {   
             // Converts and adjusts the initial merged file into one that is centered around the origin of the projects' scene.
             ConvertMerged(mergedFile);
             Debug.Log("Merged has been converted and modified successfully.");
+            // Clears list to save memory.
+            mergedList.Clear();
 
             // Writes convertedList over to a file.
-            writePointcloud(convertedList, terrainFile);
+            writeFile(convertedList, terrainFile);
             Debug.Log("Successfully wrote terrain file.");
 
             // Converts an inputted terrain into a smooth version of itself.
             ConvertTerrainToSmooth(terrainFile);
             Debug.Log("Terrain has been smoothed successfully.");
 
-            // Writes smoothTerrainList over to a file.
-            writeSmoothPointcloud(smoothTerrainList, smoothTerrainFile);
+            // Writes verticesList over to a file.
+            writeVertices(verticesList, verticesFile);
             Debug.Log("Successfully wrote a smooth terrain file.");
+
+            // Writes indices over to a file.
+            writeIndices();
         }
     }
     
@@ -83,10 +91,6 @@ public class PointcloudScript : MonoBehaviour
         // Finds out how many lines there are in the inputted .txt-document.
         var lineCount = File.ReadLines(input).Count();
         Debug.Log("Amount of lines in the original mergedFile-file: " + lineCount);
-
-
-        // List containing the direct values of the "mergedFile-file".
-        List<Vector3> mergedList = new List<Vector3>();
 
         int a = 0;
 
@@ -126,117 +130,15 @@ public class PointcloudScript : MonoBehaviour
                 a++;
             }
         }
-        // Assigns the specified x/y/z value of the previous vector in the list to the x/y/z- min's and max's.
-        xMin = xMax = mergedList[^1].x;
-        yMin = yMax = mergedList[^1].y;
-        zMin = zMax = mergedList[^1].z;
 
-        // Finds the smallest and largest values 
-        for (int i = 0; i < mergedList.Count; i++)
-        {
-            // Assigns min and max values of x, y and z after checking them.
-            // x
-            if (mergedList[i].x < xMin)
-            {
-                xMin = mergedList[i].x;
-            }
-            else if (mergedList[i].x > xMax)
-            {
-                xMax = mergedList[i].x;
-            }
-
-            // y
-            if (mergedList[i].y < yMin)
-            {
-                yMin = mergedList[i].y;
-            }
-            else if (mergedList[i].y > yMax)
-            {
-                yMax = mergedList[i].y;
-            }
-
-            // z
-            if (mergedList[i].z < zMin)
-            {
-                zMin = mergedList[i].z;
-            }
-            else if (mergedList[i].z > zMax)
-            {
-                zMax = mergedList[i].z;
-            }
-        }
-
-        Debug.Log("xMin: " + xMin);
-        Debug.Log("xMax: " + xMax);
-
-        Debug.Log("yMin: " + yMin);
-        Debug.Log("yMax: " + yMax);
-
-        Debug.Log("zMin: " + zMin);
-        Debug.Log("zMax: " + zMax);
-
-
-        // Translates the contents of mergedList to convertedList while taking offset from the scenes' origin into account. 
-        // (convertedList starts in the scenes' origin).
-
+        calcMinAndMaxValues(mergedList);
         // Calculates the offset and puts it into a Vector3.
         var offset = new Vector3((xMin + xMax) / 2, (yMin + yMax) / 2, (zMin + zMax) / 2);
         for (int i = 0; i < mergedList.Count; i++)
         {
             // Adds the current mergedList's Vector3 to the current slot in the convertedList -List after adding the offset to it.
-            convertedList.Add(
-                mergedList[i] - offset
-            );
-
-            // Resets min- and max values.
-            if (i == 0) {
-                xMin = xMax = convertedList[^1].x;
-                yMin = yMax = convertedList[^1].y;
-                zMin = zMax = convertedList[^1].z;
-            }
-
-            // x
-            if (convertedList[^1].x < xMin)
-            {
-                xMin = convertedList[^1].x;
-            }
-            else if (convertedList[^1].x > xMax)
-            {
-                xMax = convertedList[^1].x;
-            }
-
-            // y
-            if (convertedList[^1].y < yMin)
-            {
-                yMin = convertedList[^1].y;
-            }
-            else if (convertedList[^1].y > yMax)
-            {
-                yMax = convertedList[^1].y;
-            }
-
-            // z
-            if (convertedList[^1].z < zMin)
-            {
-                zMin = convertedList[^1].z;
-            }
-            else if (convertedList[^1].z > zMax)
-            {
-                zMax = convertedList[^1].z;
-            }
+            convertedList.Add(mergedList[i] - offset);
         }
-
-        Debug.Log("xMin: " + xMin);
-        Debug.Log("xMax: " + xMax);
-
-        Debug.Log("yMin: " + yMin);
-        Debug.Log("yMax: " + yMax);
-
-        Debug.Log("zMin: " + zMin);
-        Debug.Log("zMax: " + zMax);
-
-        // Clears list to save memory.
-        mergedList.Clear();
     }
 
     // CONVERTS AN INPUTTED POINTCLOUD INTO A SMOOTH VERSION OF ITSELF.
@@ -249,8 +151,11 @@ public class PointcloudScript : MonoBehaviour
         var lineCount = int.Parse(readFile.ReadLine());
         Debug.Log("Amount of lines in the original terrain-file: " + lineCount);
 
+        calcMinAndMaxValues(convertedList);
+        // Clears list to save memory.
+        convertedList.Clear();
 
-        // Calculates xStep and zStep
+        // Calculates xStep and zStep using the previously calculated min/max values of convertedList
         xStep = (int)Mathf.Ceil((xMax - xMin) / deltaX);
         zStep = (int)Mathf.Ceil((zMax - zMin) / deltaZ);
         
@@ -264,10 +169,10 @@ public class PointcloudScript : MonoBehaviour
         // who themselves act as a List of Vector3's.
         List<Vector3>[,] buckets = new List<Vector3>[xStep, zStep];
         // Adds Vector3's to the "squares" inside the "rows" of the "plane" called 'buckets'.
-            for (var j = 0; j < xStep; j++) {
-                for (var k = 0; k < zStep; k++) {
+            for (var i = 0; i < xStep; i++) {
+                for (var j = 0; j < zStep; j++) {
                     // Add a List of Vector3's to the current "square" (k) in the current "row" (j).
-                    buckets[j, k] = new List<Vector3>();
+                    buckets[i, j] = new List<Vector3>();
                 }
             }
 
@@ -285,21 +190,17 @@ public class PointcloudScript : MonoBehaviour
             List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
                 
             // Adds the recently split three string values to a Vector3 of floats by Parsing them.
-            // NOTE: For some reason not adding "CultureInfo.InvariantCulture.NumberFormat" 
-            // makes the renderer unable to recognise the file as valid. I assume that this is because it sees the ".'s" in the float values
-            // and gets confused. I therefore believe that "CultureInfo.InvariantCulture.NumberFormat" makes the code read the ".'s" as ",".
-                
-            // Could this be a matter of Unity not liking the fact that the language on my computer is Norwegian rather than its standard?^^
-            var convertedPoint = new Vector3(
+            convertedList.Add(
+                new Vector3(
                     float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat),
                     float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat),
                     float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat)
-                    );
-
+                )
+            );
 
             // Defines "o" and "p" in the current iteration.
-            var o = (int)((convertedPoint.x - xMin) / deltaX);
-            var p = (int)((convertedPoint.z - zMin) / deltaZ);
+            var o = (int)((convertedList[i].x - xMin) / deltaX);
+            var p = (int)((convertedList[i].z - zMin) / deltaZ);
 
             // If-check that makes sure "o" and "p" are not out of bounds.
             if (o < 0) 
@@ -321,9 +222,12 @@ public class PointcloudScript : MonoBehaviour
             }
 
             // Adds the converted point to the buckets-List.
-            buckets[o,p].Add(convertedPoint);
+            buckets[o,p].Add(convertedList[i]);
         }
         Debug.Log("Made it past the a-b -loop!");
+
+        // Clears list to save memory.
+        convertedList.Clear();
 
 
         // THIS IS INSPIRED BY ANDERS' CODE.
@@ -350,7 +254,8 @@ public class PointcloudScript : MonoBehaviour
         
         float averageHeight = 0;
         var numberOfPoints = 0;
-        var numberOfComparisons = 0;
+        var counter = 0;
+        verticesList = new List<Vector3>[xStep, zStep];
 
         // GENERATES THE POINTS IN THE SMOOTH "PLANE". ASSIGNS "0" AS THE Y-VALUE FOR EMPTY "SQUARES".
         // Loop through the "rows" of the "plane" called 'buckets'.
@@ -366,7 +271,7 @@ public class PointcloudScript : MonoBehaviour
                     //// ---------------------------------------------------------------------------------------------------------------------
                     // "Do this to each point that exists in the bucket".
                     // In other words: Loop through each "square" in each "row" and do this to its points.
-                    foreach (var currentPoint in buckets[i,j])
+                    foreach (var currentPoint in buckets[i, j])
                     {
                         // Add all height-values to a singular value called 'averageHeight'.
                         averageHeight += currentPoint.y;
@@ -376,52 +281,33 @@ public class PointcloudScript : MonoBehaviour
                     // as that would give us an incorrect value (You cannot divide by "0" as that gives an error, and dividing by "1" returns the same number).
                     if (buckets[i, j].Count > 0)
                     {
-                        numberOfPoints = buckets[i,j].Count;
+                        numberOfPoints = buckets[i, j].Count;
                     }
                     else
                     {
                         numberOfPoints = 1;
                     }
                     //// ---------------------------------------------------------------------------------------------------------------------
+                    
+                    // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
+                    averageHeight /= numberOfPoints;
+                    // Find the middle value of the x-coordinate in the "square" in 'buckets'.
+                    middleX = xMin + (deltaX / 2) + (deltaX * i);
+                    // Find the middle value of the z-coordinate in the "square" in 'buckets'.
+                    middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
+
+                    // Creates a final point for each square that is then added to a verticesList.
+                    verticesList[i, j].Add(
+                        new Vector3(
+                            middleX,
+                            averageHeight,
+                            middleZ
+                        )
+                    );
                 }
-                else
+                // If the mask is otherwise not filled, then do this:
+                else if (!bMaskfilled[i, j])
                 {
-                    numberOfPoints = 1;
-                }
-
-                // Divide said 'averageHeight' on the amount of items (Height's) to get the actual average height.
-                averageHeight /= numberOfPoints;
-                // Find the middle value of the x-coordinate in the "square" in 'buckets'.
-                middleX = xMin + (deltaX / 2) + (deltaX * i);
-                // Find the middle value of the z-coordinate in the "square" in 'buckets'.
-                middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
-
-                // Creates a final point for each square that is then added to a smoothTerrainList.
-                smoothTerrainList[i].Add(
-                    new Vector3(
-                        middleX,
-                        averageHeight,
-                        middleZ
-                    )
-                );
-
-                // Resets averageHeight.
-                averageHeight = 0;
-            }
-        }
-
-        // FIXES THE HEIGHT OF POINTS WITH EMPTY "SQUARES".
-        // Loop through the "rows" of the "plane" called 'buckets'.
-        for (int i = 0; i < xStep; i++)
-        {   
-            // Loop through the "squares" of the current "row" in 'buckets'.
-            for (int j = 0; j < zStep; j++)
-            {   
-                // If the mask is filled, then do this:
-                if (!bMaskfilled[i, j])
-                {
-                    float tempY = 0;
-
                     // THIS TAKES A LOT OF INSPIRATION FROM ANDERS' CODE
                     //// ---------------------------------------------------------------------------------------------------------------------
                     // Compares the x-values of 20 neighbours in the x-direction (xStep) to get an accurate x-value.
@@ -441,32 +327,38 @@ public class PointcloudScript : MonoBehaviour
                             }
                             
                             // Adds the y-values of the x- and z- neighbours.
-                            tempY += smoothTerrainList[i][j].y;
-                            numberOfComparisons++;
+                            averageHeight += verticesList[i, j][counter].y;
+                            numberOfPoints++;
+                            counter++;
                         }
+                        counter = 0;
                     }
                     //// ---------------------------------------------------------------------------------------------------------------------
 
                     // Divides the temporary, new y-value on the amount of points to get an average y-value.
-                    if (numberOfComparisons > 0)
+                    if (numberOfPoints > 0)
                     {
-                        tempY /= numberOfComparisons;
+                        averageHeight /= numberOfPoints;
                     }
+                    // NOTE: USING "[0]" IS OKAY HERE BECAUSE WE ONLY WANT EACH "SQUARE" IN THE "PLANE" TO HAVE A SINGULAR POINT IN IT ANYWAY.
                     // Creates a temporary Vector.
-                    Vector3 tempVec = smoothTerrainList[i][j];
-                    // Adds said temporary vector to its proper position in the smoothTerrainList -List.
-                    smoothTerrainList[i][j] = new Vector3(tempVec.x, tempY, tempVec.z);
+                    Vector3 tempVec = verticesList[i, j][0];
+                    // Adds said temporary vector to its proper position in the verticesList -List.
+                    verticesList[i, j][0] = new Vector3(tempVec.x, averageHeight, tempVec.z);
                     // Sets this mask as filled.
                     bMaskfilled[i, j] = true;
-                    numberOfComparisons = 0;
                 }
+
+                // Resets some values.
+                numberOfPoints = 0;
+                averageHeight = 0;
             }
         }
     }
 
 
     // WRITES THE POINTCLOUD OVER TO A FILE.
-    void writePointcloud(List<Vector3> input, string output)
+    void writeFile(List<Vector3> input, string output)
     {
         // Puts the amount of lines in the inputted List at the top of the output-file.
         File.WriteAllText(output, input.Count.ToString() + "\n");
@@ -484,34 +376,23 @@ public class PointcloudScript : MonoBehaviour
                 writeFile.WriteLine(outputLine);
             }
         }
-
-        input.Clear();
     }
 
     // WRITES THE SMOOTH POINTCLOUD TO A FILE.
-    void writeSmoothPointcloud(List<List<Vector3>> input, string output)
+    void writeVertices(List<Vector3>[,] input, string output)
     {   
-        var amountOfLines = 0;
-
-        // Counts how many lines there are in the inputted List of Lists.
-        for (int i = 0; i < input.Count; i++)
-        {
-            for (int j = 0; j < input[i].Count; j++)
-            {
-                amountOfLines++;
-            }
-        }
+        var amountOfLines = input.Length;
 
         // Puts the amount of lines in the inputted List of LIsts at the top of the output-file.
         File.WriteAllText(output, amountOfLines.ToString() + "\n");
 
         // Loops through the inputted List of Lists and formats each vector into a string, which is then printed out to the output-file.
-        for (int i = 0; i < input.Count; i++)
+        for (int i = 0; i < xStep; i++)
         {
-            for (int j = 0; j < input[i].Count; j++)
+            for (int j = 0; j < zStep; j++)
             {
                 // Replaces ","'s with a ".".
-                var outputLine = input[i][j].x + " " + input[i][j].y + " " + input[i][j].z;
+                var outputLine = input[i, j][0].x + " " + input[i, j][0].y + " " + input[i, j][0].z;
                 outputLine = outputLine.Replace(",", ".");
 
                 // Writes the current line over to a file.
@@ -521,7 +402,52 @@ public class PointcloudScript : MonoBehaviour
                 }
             }
         }
+    }
 
-        input.Clear();
+    void writeIndices()
+    {
+        // Fills up the indices -List.
+        for (int i = 0; i < xStep; i++)
+        {
+            for (int j = 0; j < zStep; j++)
+            {
+                // First triangle
+                indices.Add(j);
+                indices.Add(j + zStep);
+                indices.Add(j + zStep + 1);
+                
+                // Second triangle
+                indices.Add(j);
+                indices.Add(j + zStep + 1);
+                indices.Add(j + 1);
+            }
+        }
+    }
+
+    void calcMinAndMaxValues(List<Vector3> input)
+    {
+        // Finds the smallest and largest values 
+        for (int i = 0; i < input.Count; i++)
+        {
+            // Resets min- and max values.
+            if (i == 0) {
+                xMin = xMax = input[i].x;
+                yMin = yMax = input[i].y;
+                zMin = zMax = input[i].z;
+            }
+
+            // Assigns min and max values of x, y and z after checking them.
+            // x
+            if (input[i].x < xMin)      {xMin = input[i].x;}
+            else if (input[i].x > xMax) {xMax = input[i].x;}
+
+            // y
+            if (input[i].y < yMin)      {yMin = input[i].y;}
+            else if (input[i].y > yMax) {yMax = input[i].y;}
+
+            // z
+            if (input[i].z < zMin)      {zMin = input[i].z;}
+            else if (input[i].z > zMax) {zMax = input[i].z;}
+        }
     }
 }
