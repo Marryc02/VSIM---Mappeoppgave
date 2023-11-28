@@ -28,7 +28,7 @@ public class PointcloudScript : MonoBehaviour
     // List that contains the final converted values for the terrainFile-file.
     List<Vector3> convertedList = new List<Vector3>();
     // List that contains the final converted values for the verticesFile-file.
-    List<Vector3>[,] verticesList;
+    List<Vector3> verticesList = new List<Vector3>();
     // List that contains the indices values of the verticesList -List.
     List<int> indicesList = new List<int>();
 
@@ -51,8 +51,9 @@ public class PointcloudScript : MonoBehaviour
     int xStep = 0; 
     int zStep = 0;
 
-    float deltaX = 1; 
-    float deltaZ = 1;
+    // Used when deciding space between each square, or in other words: steplength.
+    float deltaX = 5; 
+    float deltaZ = 5;
 
 
     // Runs before Start().
@@ -74,12 +75,15 @@ public class PointcloudScript : MonoBehaviour
             Debug.Log("Terrain has been smoothed successfully.");
 
             // Writes verticesList over to a file.
-            writeVertices(verticesList, verticesFile);
+            writeFile(verticesList, verticesFile);
             Debug.Log("Successfully wrote a smooth terrain file.");
+            verticesList.Clear();
 
             // Fetches and writes indices.
             fetchAndWriteIndices();
             Debug.Log("Successfully fetched and wrote indices.");
+            // Clears list to save memory.
+            indicesList.Clear();
         }
     }
     
@@ -255,8 +259,7 @@ public class PointcloudScript : MonoBehaviour
         
         float averageHeight = 0;
         var numberOfPoints = 0;
-        //var counter = 0;
-        verticesList = new List<Vector3>[xStep, zStep];
+        //verticesList = new List<Vector3>();
 
         // GENERATES THE POINTS IN THE SMOOTH "PLANE". ASSIGNS "0" AS THE Y-VALUE FOR EMPTY "SQUARES".
         // Loop through the "rows" of the "plane" called 'buckets'.
@@ -265,7 +268,7 @@ public class PointcloudScript : MonoBehaviour
             // Loop through the "squares" of the current "row" in 'buckets'.
             for (int j = 0; j < zStep; j++)
             {   
-                verticesList[i, j] = new List<Vector3>();
+                //verticesList[i, j] = new List<Vector3>();
                 // If the mask is filled, then do this:
                 if (bMaskfilled[i, j])
                 {
@@ -381,22 +384,19 @@ public class PointcloudScript : MonoBehaviour
                     */
 
                     averageHeight = 0;
+                    numberOfPoints = 1;
                     bMaskfilled[i, j] = true;
                 }
 
                 // Divides the temporary, new y-value on the amount of points to get an average y-value.
-                if (numberOfPoints > 0)
-                {
-                    averageHeight /= numberOfPoints;
-                }
-
+                averageHeight /= numberOfPoints;
                 // Find the middle value of the x-coordinate in the "square" in 'buckets'.
                 middleX = xMin + (deltaX / 2) + (deltaX * i);
                 // Find the middle value of the z-coordinate in the "square" in 'buckets'.
                 middleZ = zMin + (deltaZ / 2) + (deltaZ * j);
 
                 // Creates a final point for each square that is then added to a verticesList.
-                verticesList[i, j].Add(
+                verticesList.Add(
                     new Vector3(
                         middleX,
                         averageHeight,
@@ -472,13 +472,11 @@ public class PointcloudScript : MonoBehaviour
         }
     }
 
-    // WRITES THE SMOOTH POINTCLOUD TO A FILE.
+    /*// WRITES THE SMOOTH POINTCLOUD TO A FILE.
     void writeVertices(List<Vector3>[,] input, string output)
     {   
-        var amountOfLines = input.Length;
-
         // Puts the amount of lines in the inputted List of LIsts at the top of the output-file.
-        File.WriteAllText(output, amountOfLines.ToString() + "\n");
+        File.WriteAllText(output, input.Length.ToString() + "\n");
 
         // Loops through the inputted List of Lists and formats each vector into a string, which is then printed out to the output-file.
         for (int i = 0; i < xStep; i++)
@@ -486,6 +484,7 @@ public class PointcloudScript : MonoBehaviour
             for (int j = 0; j < zStep; j++)
             {
                 // Replaces ","'s with a ".".
+                // Writing "[0]" here is fine because every "square" is only supposed to have one Vector3 in it anyway.
                 var outputLine = input[i, j][0].x + " " + input[i, j][0].y + " " + input[i, j][0].z;
                 outputLine = outputLine.Replace(",", ".");
 
@@ -496,7 +495,7 @@ public class PointcloudScript : MonoBehaviour
                 }
             }
         }
-    }
+    }*/
     
     // CALCULATES MIN- AND MAX VALUES.
     void calcMinAndMaxValues(List<Vector3> input)
