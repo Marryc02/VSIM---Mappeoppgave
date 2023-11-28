@@ -420,13 +420,19 @@ public class ReadWriteScript : MonoBehaviour
             for (int j = 0; j < zStep; j++)
             {
                 // First triangle
+                // a
                 indicesList.Add(j + (i * zStep));
-                indicesList.Add(j + ((i + 1) * zStep));
-                indicesList.Add(j + 1 + ((i + 1) * zStep));
+                // c
+                indicesList.Add(j + (i + 1) * zStep);
+                // d
+                indicesList.Add(j + 1 + (i + 1) * zStep);
                 
                 // Second triangle
+                // a
                 indicesList.Add(j + (i * zStep));
-                indicesList.Add(j + 1 + ((i + 1) * zStep));
+                // d
+                indicesList.Add(j + 1 + (i + 1) * zStep);
+                // b
                 indicesList.Add(j + 1 + (i * zStep));
             }
         }
