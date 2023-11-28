@@ -13,7 +13,7 @@ using System.Drawing;
 // who inspired me as to how I might fix parts of my terrain, which was broken at the time.
 // (https://learn.microsoft.com/en-us/troubleshoot/developer/visualstudio/csharp/language-compilers/read-write-text-file),
 
-public class PointcloudScript : MonoBehaviour
+public class ReadWriteScript : MonoBehaviour
 {
     [SerializeField] bool bGenerateData = true;
 

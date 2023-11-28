@@ -16,16 +16,17 @@ public class TriangleSurfaceScript : MonoBehaviour
     [SerializeField] Material terrainMaterial;
 
     string verticesFile = @"Assets/Resources/vertices.txt";
+    string indicesFile = @"Assets/Resources/indices.txt";
 
     // List containing the direct values of the "smoothTerrainFile -file".
-    List<Vector3> vertices = new List<Vector3>();
-    List<int> indices = new List<int>();
+    List<Vector3> verticesList = new List<Vector3>();
+    List<int> indicesList = new List<int>();
 
     void Awake() {
         if (bGenerateTriangleSurface)
         {
             fetchVertices(verticesFile);
-            fetchIndices();
+            fetchIndices(indicesFile);
 
             generateSurface();
         }
@@ -58,7 +59,7 @@ public class TriangleSurfaceScript : MonoBehaviour
             // makes the renderer unable to recognise the file as valid. I assume that this is because it sees the ".'s" in the float values
             // and gets confused. I therefore believe that "CultureInfo.InvariantCulture.NumberFormat" makes the code read the ".'s" as ",".
             // Could this be a matter of Unity not liking the fact that the language on my computer is Norwegain rather than its standard?^^
-            vertices.Add(
+            verticesList.Add(
                 new Vector3(
                     float.Parse(pointValues[0], CultureInfo.InvariantCulture.NumberFormat),
                     float.Parse(pointValues[1], CultureInfo.InvariantCulture.NumberFormat),
@@ -68,9 +69,41 @@ public class TriangleSurfaceScript : MonoBehaviour
         }
     }
 
-    void fetchIndices()
+    void fetchIndices(string input)
     {
+        // Pass the file path and file name to the StreamReader constructor.
+        StreamReader readFile = new StreamReader(input);
+
+        // Finds out how many lines there are in the inputted .txt-document.
+        var lineCount = int.Parse(readFile.ReadLine());
+        Debug.Log("Amount of lines to be read into the vertices list: " + lineCount);
         
+
+        for (int i = 0; i < lineCount; i++)
+        {
+            // Reads the first line of text.
+            string line = readFile.ReadLine();
+
+            // Makes a new list of strings with the name "pointValues".
+            // Assigns the mergedFile .txt-document as the value of the List, however it also splits each line in the .txt-document
+            // in such a way that the document writes a new line with everything that comes after a space in the .txt-document all while
+            // deleting empty spaces in the .txt-document.
+            // Lastly it converts the document to a List as it is technically just a really long string with a format.
+            List<String> pointValues = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+                
+            // Adds the recently split three string values to the mergedList as a Vector3 of floats by Parsing them.
+            // NOTE: For some reason not adding "CultureInfo.InvariantCulture.NumberFormat" 
+            // makes the renderer unable to recognise the file as valid. I assume that this is because it sees the ".'s" in the float values
+            // and gets confused. I therefore believe that "CultureInfo.InvariantCulture.NumberFormat" makes the code read the ".'s" as ",".
+            // Could this be a matter of Unity not liking the fact that the language on my computer is Norwegain rather than its standard?^^
+            if (pointValues.Count == 3)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    indicesList.Add(int.Parse(pointValues[j], CultureInfo.InvariantCulture.NumberFormat));
+                }
+            }
+        }
     }
 
     void generateSurface()
@@ -90,8 +123,8 @@ public class TriangleSurfaceScript : MonoBehaviour
         triangleSurfaceMesh.indexFormat = IndexFormat.UInt32;
 
         // Assigns triangles and vertices to our mesh.
-        triangleSurfaceMesh.vertices = vertices.ToArray();
-        triangleSurfaceMesh.triangles = indices.ToArray();
+        triangleSurfaceMesh.vertices = verticesList.ToArray();
+        triangleSurfaceMesh.triangles = indicesList.ToArray();
 
         // Recalculates normals and tangents for the mesh.
         triangleSurfaceMesh.RecalculateNormals();
