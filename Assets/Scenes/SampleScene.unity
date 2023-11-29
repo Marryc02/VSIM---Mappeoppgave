@@ -210,7 +210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c025606f2a3218a46878b70405461b10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bGenerateTriangleSurface: 0
+  bGenerateTriangleSurface: 1
   terrainMaterial: {fileID: 2100000, guid: 3fd0a01c127e9444190d2a7a41028612, type: 2}
   verticesList: []
   indicesList: 
