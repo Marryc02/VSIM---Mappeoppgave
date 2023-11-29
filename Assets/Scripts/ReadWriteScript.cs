@@ -31,6 +31,7 @@ public class ReadWriteScript : MonoBehaviour
     List<Vector3> verticesList = new List<Vector3>();
     // List that contains the indices values of the verticesList -List.
     List<int> indicesList = new List<int>();
+    List<int> trianglesList = new List<int>();
 
 
     // Used for deciding how many lines should be skipped when converting the initial merged file and making a smooth pointcloud.
@@ -79,8 +80,8 @@ public class ReadWriteScript : MonoBehaviour
             Debug.Log("Successfully wrote a smooth terrain file.");
             verticesList.Clear();
 
-            // Fetches and writes indices.
-            fetchAndWriteIndices();
+            // Fetches and writes indices and neighbours of triangles.
+            fetchAndWriteIndicesAndNeighbours();
             Debug.Log("Successfully fetched and wrote indices.");
             // Clears list to save memory.
             indicesList.Clear();
@@ -319,7 +320,7 @@ public class ReadWriteScript : MonoBehaviour
                                         continue;
                                     }
 
-                                    // Adds the y-values of the x- and z- neighbours.
+                                    // Adds the y-values of the x- and z- triangleSurfaceInstance.Triangle.neighbours.
                                     averageHeight += verticesList[i, j][zN].y;
                                     numberOfPoints++;
                                 }
@@ -333,7 +334,7 @@ public class ReadWriteScript : MonoBehaviour
                                         continue;
                                     }
 
-                                    // Adds the y-values of the x- and z- neighbours.
+                                    // Adds the y-values of the x- and z- triangleSurfaceInstance.Triangle.neighbours.
                                     averageHeight += verticesList[i, j][zN].y;
                                     numberOfPoints++;
                                 }
@@ -355,7 +356,7 @@ public class ReadWriteScript : MonoBehaviour
                                         continue;
                                     }
 
-                                    // Adds the y-values of the x- and z- neighbours.
+                                    // Adds the y-values of the x- and z- triangleSurfaceInstance.Triangle.neighbours.
                                     averageHeight += verticesList[i, j][zN].y;
                                     numberOfPoints++;
                                 }
@@ -369,7 +370,7 @@ public class ReadWriteScript : MonoBehaviour
                                         continue;
                                     }
 
-                                    // Adds the y-values of the x- and z- neighbours.
+                                    // Adds the y-values of the x- and z- triangleSurfaceInstance.Triangle.neighbours.
                                     averageHeight += verticesList[i, j][zN].y;
                                     numberOfPoints++;
                                 }
@@ -412,28 +413,71 @@ public class ReadWriteScript : MonoBehaviour
     }
 
     // FETCHES INDICES.
-    void fetchAndWriteIndices()
+    // THE CODE FOR FINDING TRIANGLE NEIGHBOURS IS HEAVILY INSPIRED BY ANDERS FROM THE CLASS.
+    void fetchAndWriteIndicesAndNeighbours()
     {   
+        // useful constants:
+        int trianglesInARow = 2 * (zStep - 1);
+        int totalTris = trianglesInARow * (xStep - 1);
+
         // Fills up the indices -List.
         for (int i = 0; i < xStep; i++)
         {
+            // useful constant:
+            int numTrianglesUptoThisRow = 2 * i * (zStep - 1);
+
             for (int j = 0; j < zStep; j++)
             {
+                // useful constants
+                int evenTriangle = 2 * (i * (zStep - 1) + j);
+                int oddTriangle = evenTriangle + 1;
+
+
                 // First triangle
-                // a
-                indicesList.Add(j + (i * zStep));
-                // c
-                indicesList.Add(j + (i + 1) * zStep);
-                // d
-                indicesList.Add(j + 1 + (i + 1) * zStep);
+                var I0 = j + (i * zStep);
+                var I1 = j + (i + 1) * zStep;
+                var I2 = j + 1 + (i + 1) * zStep;
+
+                indicesList.Add(I0);
+                indicesList.Add(I1);
+                indicesList.Add(I2);
+
+                // // calculate neighbour-triangles and set to -1 if out of bounds:
+                int T0 = oddTriangle;
+                if (T0 < numTrianglesUptoThisRow + trianglesInARow) {trianglesList.Add(T0);}
+                else                                                {trianglesList.Add(-1);}
+
+                int T1 = evenTriangle - 1;
+                if (T1 > numTrianglesUptoThisRow)                   {trianglesList.Add(T1);}
+                else                                                {trianglesList.Add(-1);}
+
+                int T2 = evenTriangle - trianglesInARow + 1;
+                if (T2 > 0)                                         {trianglesList.Add(T2);}
+                else                                                {trianglesList.Add(-1);}
                 
+
+
                 // Second triangle
-                // a
-                indicesList.Add(j + (i * zStep));
-                // d
-                indicesList.Add(j + 1 + (i + 1) * zStep);
-                // b
-                indicesList.Add(j + 1 + (i * zStep));
+                var I3 = j + (i * zStep);
+                var I4 = j + 1 + (i + 1) * zStep;
+                var I5 = j + 1 + (i * zStep);
+
+                indicesList.Add(I3);
+                indicesList.Add(I4);
+                indicesList.Add(I5);
+
+                // calculate neighbour-triangles and set to -1 if out of bounds:
+                int T3 = evenTriangle + trianglesInARow;
+                if (T3 < totalTris)                                 {trianglesList.Add(T3);}
+                else                                                {trianglesList.Add(-1);}
+
+                int T4 = evenTriangle;
+                if (T4 >= numTrianglesUptoThisRow)                  {trianglesList.Add(T4);}
+                else                                                {trianglesList.Add(-1);}
+
+                int T5 = oddTriangle + 1;
+                if (T5 < numTrianglesUptoThisRow + trianglesInARow) {trianglesList.Add(T5);}
+                else                                                {trianglesList.Add(-1);}
             }
         }
 
@@ -444,10 +488,11 @@ public class ReadWriteScript : MonoBehaviour
         File.WriteAllText(indicesFile, indicesListSize.ToString() + "\n");
 
         // Loops throught the inputted List and formats each vector into a string, which is then printed out to the output-file.
-        for (int i = 0; i < indicesListSize; i++)
+        for (int i = 0; i < indicesListSize * 2; i++)
         {
-            // Replaces ","'s with a ".".
-            var outputLine = indicesList[i] + " " + indicesList[i + 1] + " " + indicesList[i + 2];
+            // Assigns values to a variable that is later printed out to the text.
+            var outputLine = indicesList  [i] + " " + indicesList  [i + 1] + " " + indicesList  [i + 2]   + " " +
+                             trianglesList[i] + " " + trianglesList[i + 1] + " " + trianglesList[i + 2];
 
             // Writes the current line over to a file.
             using (StreamWriter writeFile = File.AppendText(indicesFile))
@@ -529,6 +574,5 @@ public class ReadWriteScript : MonoBehaviour
             if (input[i].z < zMin)      {zMin = input[i].z;}
             else if (input[i].z > zMax) {zMax = input[i].z;}
         }
-    }
-    
+    } 
 }
