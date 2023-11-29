@@ -17,6 +17,9 @@ public class Triangle
         indices = new[]{i0, i1, i2};
         neighbours = new[]{triangle0, triangle1, triangle2};
         index = triangleIndex;
+
+        GetNormalVectors();
+        NormalizeNormal();
     }
 
     public int[]indices;
@@ -25,6 +28,29 @@ public class Triangle
 
     public Vector3 surfaceNormal;
     public Vector3 unitNormal;
+    
+
+    public bool IsInTriangle(Vector3 ballPos)
+	{
+		Vector3 baryc = new Vector3();
+        baryc = BarycentricCoordinates.barycInstance.CalcBarycentricCoords
+        (
+            new Vector2(TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[0]].x, TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[0]].z),
+            new Vector2(TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[1]].x, TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[1]].z),
+            new Vector2(TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[2]].x, TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[2]].z),
+            new Vector2(ballPos.x, ballPos.z)
+        );
+
+        for (int i = 0; i < TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles.Count; i++)
+        {
+            if (this == TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[i])
+            {
+                Debug.Log($"Ball over current triangle: {i}");
+            }
+        }
+
+        return true;
+	}
 
     void GetNormalVectors()
     {
@@ -39,35 +65,13 @@ public class Triangle
         unitNormal = surfaceNormal;
         unitNormal.Normalize();
     }
-
-    public bool IsInTriangle(Vector3 ballPos)
-	{
-		Vector3 baryc = new Vector3();
-        baryc = BarycentricCoordinates.barycInstance.CalcBarycentricCoords
-        (
-            new Vector2(TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[0]].x, TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[0]].z),
-            new Vector2(TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[1]].x, TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[1]].z),
-            new Vector2(TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[2]].x, TriangleSurfaceScript.triangleSurfaceInstance.verticesList[indices[2]].z),
-            new Vector2(ballPos.x, ballPos.z)
-        );
-
-        /*for (int i = 0; i < TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles.Count; i++)
-        {
-            if (this == TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[i])
-            {
-                Debug.Log($"Ball over current triangle: {i}");
-            }
-        }*/
-
-        return true;
-	}
 }
 
 public class TriangleSurfaceScript : MonoBehaviour
 {   
     public static TriangleSurfaceScript triangleSurfaceInstance { get; private set; }
 
-    [SerializeField] bool bGenerateTriangleSurface = false;
+    [SerializeField] public bool bGenerateTriangleSurface = false;
     [SerializeField] Material terrainMaterial;
 
     string verticesFile = @"Assets/Resources/vertices.txt";

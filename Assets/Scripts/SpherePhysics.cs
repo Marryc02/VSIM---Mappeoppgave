@@ -21,11 +21,6 @@ public class SpherePhysics : MonoBehaviour
     private void Awake() {
         sphereInstance = this;
     }
-
-    void OnDrawGizmos() {
-        Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.3f);
-        Gizmos.DrawSphere(transform.position, SphereRadius);    
-    }
     
     // Fixed update runs at a constant FPS, important for physics
     // In FixedUpdate we used Time.fixedDeltaTime as opposed to Time.deltaTime in Update()
@@ -41,9 +36,9 @@ public class SpherePhysics : MonoBehaviour
         if (triangleRef != null)
         {
             // Velocity after collision
-            Vector3 colVel = Velocity - Vector3.Dot(Velocity, (triangleRef.unitNormal * -1)) * (triangleRef.unitNormal * -1);
-            float velNorm = Vector3.Dot((triangleRef.unitNormal * -1), colVel);
-            colVel += -velNorm * (triangleRef.unitNormal * -1);
+            Vector3 colVel = Velocity - Vector3.Dot(Velocity, triangleRef.unitNormal) * triangleRef.unitNormal;
+            float velNorm = Vector3.Dot(triangleRef.unitNormal, colVel);
+            colVel += -velNorm * triangleRef.unitNormal;
 
             Velocity = colVel;
 
@@ -51,6 +46,8 @@ public class SpherePhysics : MonoBehaviour
        
         transform.position = new Vector3(transform.position.x, 
         BarycentricCoordinates.barycInstance.HeightFromBaryc(new Vector2(transform.position.x, transform.position.z)) + 
-        sphereInstance.SphereRadius, transform.position.z);       
+        sphereInstance.SphereRadius, transform.position.z);
+
+        Acceleration = (Velocity - startVel) / Time.deltaTime;      
     }  
 }

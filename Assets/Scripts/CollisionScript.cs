@@ -29,7 +29,7 @@ public class CollisionScript : MonoBehaviour
 
         if (CurrentTriangle != null)
         {
-            collisionPoint = centre + (Vector3.Dot(barycVector - centre, (CurrentTriangle.unitNormal * -1)) * (CurrentTriangle.unitNormal * -1));
+            collisionPoint = centre + (Vector3.Dot(barycVector - centre, CurrentTriangle.unitNormal) * CurrentTriangle.unitNormal);
         }
         
     }
@@ -38,8 +38,8 @@ public class CollisionScript : MonoBehaviour
     Triangle CheckCurrentTriangle()
     {
         // If-check that is used to check if we have already checked for an intial triangle.
-        if (currentTriangleCheckedOnce == false)
-        {
+        //if (currentTriangleCheckedOnce == false)
+        //{
             // Loop through all triangles and check if the balls centre is in one of them. 
             // If true; then set the current triangle in the "madeTriangles" -List as the current triangle, and set "currentTriangleCheckedOnce" to "true".
             for (int i = 0; i < TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles.Count; i++)
@@ -50,21 +50,21 @@ public class CollisionScript : MonoBehaviour
                     return TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[i];
                 }
             }
-        }
-        // Otherwise if we have already checked for an initial triangfle once, then do this:
+        //}
+        /*// Otherwise if we have already checked for an initial triangfle once, then do this:
         else
         {
-            // Loop through the current triangles neighbours.
+            // Loop through the current triangle's neighbours.
             for (int i = 0; i < CurrentTriangle.neighbours.Length; i++)
             {
                 // Loop through the "madeTriangles" -List based on which triangles are neighbours of the current one,
                 // then check if the ball is inside one of them and set said triangle as the new current triangle.
-                if (TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[CurrentTriangle.neighbours[i]].IsInTriangle(centre))
+                if (TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[CurrentTriangle.neighbours[i].index].IsInTriangle(centre))
                 {
                     return TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[i];
                 }
             }
-        }
+        }*/
 
         //Debug.LogWarning("Could not find triangle");
         return null;

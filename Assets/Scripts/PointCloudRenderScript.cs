@@ -11,13 +11,13 @@ public class PointCloudRenderScript : MonoBehaviour
 {
     public static PointCloudRenderScript renderInstance { get; private set; }
 
-    [SerializeField] bool regularTerrain = true;
+    [SerializeField] bool regularTerrain = false;
     [SerializeField] bool smoothTerrain = false;
 
     string chosenFile;
     string terrainFile = @"Assets/Resources/terrain.txt";
     string verticesFile = @"Assets/Resources/vertices.txt";
-    [HideInInspector] public bool fileHasBeenChosen = true;
+    [HideInInspector] public bool fileHasBeenChosen = false;
 
     List<Vector3> points = new List<Vector3>();
     int pointsCount;
@@ -33,28 +33,27 @@ public class PointCloudRenderScript : MonoBehaviour
 
     private void Awake() {
         renderInstance = this;
-    }
 
-    // Start is called before the first frame update
-    void Start() {
         if (regularTerrain == true && smoothTerrain == false)
         {
             chosenFile = terrainFile;
+            fileHasBeenChosen = true;
         }
         else if (regularTerrain == false && smoothTerrain == true)
         {
             chosenFile = verticesFile;
+            fileHasBeenChosen = true;
         }
         else
         {
             fileHasBeenChosen = false;
-        }
-
-        if (fileHasBeenChosen == false)
-        {
             Debug.Log("You did not select a pointcloud to render.");
         }
-        else
+    }
+
+    // Start is called before the first frame update
+    void Start() {
+        if (fileHasBeenChosen == true)
         {
             // Finds out how many points there are in the inputted .txt-document.
             pointsCount = File.ReadLines(chosenFile).Count();

@@ -11,9 +11,11 @@ public class CameraPositionScript : MonoBehaviour
         {
             this.transform.position = new Vector3(0, 200, -500);
         }
-        else
+        else if (PointCloudRenderScript.renderInstance.fileHasBeenChosen == false && 
+                 TriangleSurfaceScript.triangleSurfaceInstance.bGenerateTriangleSurface == true)
         {
-            this.transform.position = new Vector3(50, 290, -80);
+            this.transform.position = new Vector3(320, 390, 465);
+            this.transform.Rotate(15, -90, 0, 0);
         }
     }
 }
