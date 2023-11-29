@@ -29,7 +29,7 @@ public class CollisionScript : MonoBehaviour
 
         if (CurrentTriangle != null)
         {
-            collisionPoint = centre + (Vector3.Dot(barycVector - centre, CurrentTriangle.unitNormal)) * CurrentTriangle.unitNormal;
+            collisionPoint = centre + (Vector3.Dot(barycVector - centre, (CurrentTriangle.unitNormal * -1)) * (CurrentTriangle.unitNormal * -1));
         }
         
     }

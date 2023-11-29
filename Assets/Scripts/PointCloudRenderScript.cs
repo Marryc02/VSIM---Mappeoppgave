@@ -9,13 +9,15 @@ using UnityEngine.AI;
 
 public class PointCloudRenderScript : MonoBehaviour
 {
+    public static PointCloudRenderScript renderInstance { get; private set; }
+
     [SerializeField] bool regularTerrain = true;
     [SerializeField] bool smoothTerrain = false;
 
     string chosenFile;
     string terrainFile = @"Assets/Resources/terrain.txt";
     string verticesFile = @"Assets/Resources/vertices.txt";
-    bool fileHasBeenChosen = true;
+    [HideInInspector] public bool fileHasBeenChosen = true;
 
     List<Vector3> points = new List<Vector3>();
     int pointsCount;
@@ -28,6 +30,10 @@ public class PointCloudRenderScript : MonoBehaviour
     [SerializeField] Material material;
     [SerializeField] Mesh mesh;
 
+
+    private void Awake() {
+        renderInstance = this;
+    }
 
     // Start is called before the first frame update
     void Start() {

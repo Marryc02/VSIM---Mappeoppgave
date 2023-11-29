@@ -41,9 +41,9 @@ public class SpherePhysics : MonoBehaviour
         if (triangleRef != null)
         {
             // Velocity after collision
-            Vector3 colVel = Velocity - Vector3.Dot(Velocity, triangleRef.unitNormal) * triangleRef.unitNormal;
-            float velNorm = Vector3.Dot(triangleRef.unitNormal, colVel);
-            colVel += -velNorm * triangleRef.unitNormal;
+            Vector3 colVel = Velocity - Vector3.Dot(Velocity, (triangleRef.unitNormal * -1)) * (triangleRef.unitNormal * -1);
+            float velNorm = Vector3.Dot((triangleRef.unitNormal * -1), colVel);
+            colVel += -velNorm * (triangleRef.unitNormal * -1);
 
             Velocity = colVel;
 

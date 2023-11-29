@@ -439,8 +439,8 @@ public class ReadWriteScript : MonoBehaviour
                 var I2 = j + 1 + (i + 1) * zStep;
 
                 indicesList.Add(I0);
-                indicesList.Add(I1);
                 indicesList.Add(I2);
+                indicesList.Add(I1);
 
                 // // calculate neighbour-triangles and set to -1 if out of bounds:
                 int T0 = oddTriangle;
@@ -463,8 +463,8 @@ public class ReadWriteScript : MonoBehaviour
                 var I5 = j + 1 + (i * zStep);
 
                 indicesList.Add(I3);
-                indicesList.Add(I4);
                 indicesList.Add(I5);
+                indicesList.Add(I4);
 
                 // calculate neighbour-triangles and set to -1 if out of bounds:
                 int T3 = evenTriangle + trianglesInARow;
