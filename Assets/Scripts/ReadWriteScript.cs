@@ -413,7 +413,7 @@ public class ReadWriteScript : MonoBehaviour
 
     // FETCHES INDICES.
     void fetchAndWriteIndices()
-    {
+    {   
         // Fills up the indices -List.
         for (int i = 0; i < xStep; i++)
         {
