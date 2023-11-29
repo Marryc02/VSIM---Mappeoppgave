@@ -21,7 +21,6 @@ public class BarycentricCoordinates : MonoBehaviour
 
 		for (int i = 0; i < TriangleSurfaceScript.triangleSurfaceInstance.indicesList.Count / 3; i++)
 		{
-
 			int i1, i2, i3;
 			i1 = TriangleSurfaceScript.triangleSurfaceInstance.indicesList[i * 3];
 			i2 = TriangleSurfaceScript.triangleSurfaceInstance.indicesList[i * 3 + 1];

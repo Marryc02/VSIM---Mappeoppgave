@@ -482,13 +482,13 @@ public class ReadWriteScript : MonoBehaviour
         }
 
         // Gets the amount of indices and divides by 3 for every future triangle.
-        var indicesListSize = indicesList.Count / 3;
+        //var indicesListSize = indicesList.Count / 3;
 
         // Puts the amount of lines in the inputted List at the top of the output-file.
-        File.WriteAllText(indicesFile, indicesListSize.ToString() + "\n");
+        File.WriteAllText(indicesFile, indicesList.Count.ToString() + "\n");
 
         // Loops throught the inputted List and formats each vector into a string, which is then printed out to the output-file.
-        for (int i = 0; i < indicesListSize * 2; i++)
+        for (int i = 0; i < indicesList.Count - 2; i += 3)
         {
             // Assigns values to a variable that is later printed out to the text.
             var outputLine = indicesList  [i] + " " + indicesList  [i + 1] + " " + indicesList  [i + 2]   + " " +

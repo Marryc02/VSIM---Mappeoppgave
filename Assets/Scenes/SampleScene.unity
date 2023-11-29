@@ -168,6 +168,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &338118550
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 338118553}
+  - component: {fileID: 338118552}
+  - component: {fileID: 338118551}
+  m_Layer: 0
+  m_Name: TriangleSurface
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &338118551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338118550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb8e562758903e6439190a9ea46d59ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &338118552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338118550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c025606f2a3218a46878b70405461b10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bGenerateTriangleSurface: 0
+  terrainMaterial: {fileID: 2100000, guid: 3fd0a01c127e9444190d2a7a41028612, type: 2}
+  verticesList: []
+  indicesList: 
+  neighboursList: 
+--- !u!4 &338118553
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338118550}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 227.30455, y: 288.69983, z: 445.88074}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -378,10 +440,8 @@ GameObject:
   - component: {fileID: 2074498323}
   - component: {fileID: 2074498325}
   - component: {fileID: 2074498322}
-  - component: {fileID: 2074498324}
-  - component: {fileID: 2074498326}
   m_Layer: 0
-  m_Name: PlaceholderObject
+  m_Name: ReadWriteAndPointCloud
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -400,7 +460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   regularTerrain: 0
-  smoothTerrain: 0
+  smoothTerrain: 1
   fileHasBeenChosen: 1
   material: {fileID: 2100000, guid: 46237739a51ac694db32540b390400a3, type: 2}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -419,23 +479,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2074498324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2074498320}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c025606f2a3218a46878b70405461b10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bGenerateTriangleSurface: 1
-  terrainMaterial: {fileID: 2100000, guid: 3fd0a01c127e9444190d2a7a41028612, type: 2}
-  verticesList: []
-  indicesList: 
-  neighboursList: 
 --- !u!114 &2074498325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -449,18 +492,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bGenerateData: 0
---- !u!114 &2074498326
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2074498320}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb8e562758903e6439190a9ea46d59ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -468,4 +499,5 @@ SceneRoots:
   - {fileID: 963194228}
   - {fileID: 705507995}
   - {fileID: 2074498323}
+  - {fileID: 338118553}
   - {fileID: 221272128}
