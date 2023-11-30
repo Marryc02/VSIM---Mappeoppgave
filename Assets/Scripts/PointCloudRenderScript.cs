@@ -7,15 +7,17 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class RenderScript : MonoBehaviour
+public class PointCloudRenderScript : MonoBehaviour
 {
-    [SerializeField] bool regularTerrain = true;
+    public static PointCloudRenderScript renderInstance { get; private set; }
+
+    [SerializeField] bool regularTerrain = false;
     [SerializeField] bool smoothTerrain = false;
 
     string chosenFile;
     string terrainFile = @"Assets/Resources/terrain.txt";
-    string smoothTerrainFile = @"Assets/Resources/smoothTerrain.txt";
-    bool fileHasBeenChosen = true;
+    string verticesFile = @"Assets/Resources/vertices.txt";
+    [HideInInspector] public bool fileHasBeenChosen = false;
 
     List<Vector3> points = new List<Vector3>();
     int pointsCount;
@@ -29,26 +31,29 @@ public class RenderScript : MonoBehaviour
     [SerializeField] Mesh mesh;
 
 
-    // Start is called before the first frame update
-    void Start() {
+    private void Awake() {
+        renderInstance = this;
+
         if (regularTerrain == true && smoothTerrain == false)
         {
             chosenFile = terrainFile;
+            fileHasBeenChosen = true;
         }
         else if (regularTerrain == false && smoothTerrain == true)
         {
-            chosenFile = smoothTerrainFile;
+            chosenFile = verticesFile;
+            fileHasBeenChosen = true;
         }
         else
         {
             fileHasBeenChosen = false;
+            Debug.Log("You did not select a pointcloud to render.");
         }
+    }
 
-        if (fileHasBeenChosen == false)
-        {
-            Debug.Log("You did not select a terrain to render properly!");
-        }
-        else
+    // Start is called before the first frame update
+    void Start() {
+        if (fileHasBeenChosen == true)
         {
             // Finds out how many points there are in the inputted .txt-document.
             pointsCount = File.ReadLines(chosenFile).Count();
@@ -88,23 +93,22 @@ public class RenderScript : MonoBehaviour
                         float.Parse(pointValues[2], CultureInfo.InvariantCulture.NumberFormat)
                     )
                 );
-        }
-        }
-        
+            }
 
-        /*
-        Code below obtained form Unity's documentation on RenderPrimitives
-        https://docs.unity3d.com/ScriptReference/Graphics.RenderPrimitives.html
-        */
-        meshTriangles = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.triangles.Length, sizeof(int));
-        meshTriangles.SetData(mesh.triangles);
+            /*
+            Code below obtained form Unity's documentation on RenderPrimitives
+            https://docs.unity3d.com/ScriptReference/Graphics.RenderPrimitives.html
+            */
+            meshTriangles = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.triangles.Length, sizeof(int));
+            meshTriangles.SetData(mesh.triangles);
         
-        meshPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, pointsCount, 3 * sizeof(float));
-        meshPositions.SetData(points.ToArray());
-        points.Clear();
+            meshPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, pointsCount, 3 * sizeof(float));
+            meshPositions.SetData(points.ToArray());
+            points.Clear();
 
-        vertexPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.vertices.Length, 3 * sizeof(float));
-        vertexPositions.SetData(mesh.vertices);
+            vertexPositions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, mesh.vertices.Length, 3 * sizeof(float));
+            vertexPositions.SetData(mesh.vertices);
+        }
     }
 
 
