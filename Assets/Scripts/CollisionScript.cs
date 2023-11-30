@@ -24,6 +24,7 @@ public class CollisionScript : MonoBehaviour
     {
         centre = collisionObject.transform.position;
         CurrentTriangle = CheckCurrentTriangle();
+        Debug.Log("Current triangle is: " + CurrentTriangle);
         barycVector = collisionObject.transform.position;
         barycVector.y = BarycentricCoordinates.barycInstance.HeightFromBaryc(new Vector2(collisionObject.transform.position.x, collisionObject.transform.position.z));
 

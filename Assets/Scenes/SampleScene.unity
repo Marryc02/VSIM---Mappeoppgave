@@ -460,7 +460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   regularTerrain: 0
-  smoothTerrain: 1
+  smoothTerrain: 0
   fileHasBeenChosen: 1
   material: {fileID: 2100000, guid: 46237739a51ac694db32540b390400a3, type: 2}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}

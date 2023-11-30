@@ -19,11 +19,11 @@ public class Triangle
     public Vector3 surfaceNormal;
     public Vector3 unitNormal;
 
-    public Triangle(int i0, int i1, int i2, int triangle0, int triangle1, int triangle2, int triangleIndex)
+    public Triangle(int i0, int i1, int i2, int triangle0, int triangle1, int triangle2)
     {
         indices = new[]{i0, i1, i2};
         neighbours = new[]{triangle0, triangle1, triangle2};
-        index = triangleIndex;
+        //index = triangleIndex;
 
         GetNormalVectors();
         NormalizeNormal();
@@ -186,8 +186,7 @@ public class TriangleSurfaceScript : MonoBehaviour
                                            indicesInput[i + 2], 
                                            neighboursInput[i], 
                                            neighboursInput[i + 1], 
-                                           neighboursInput[i + 2], 
-                                           i));
+                                           neighboursInput[i + 2]));
         }
     }
 
