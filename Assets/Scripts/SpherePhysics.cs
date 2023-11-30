@@ -10,7 +10,7 @@ public class SpherePhysics : MonoBehaviour
     public static SpherePhysics sphereInstance { get; private set; }
 
     [SerializeField] public float SphereRadius = 1.0f;
-    [SerializeField] float SphereWeight = 0.06f;
+    [SerializeField] float mass = 0.06f;
 
     public float gravity = 9.81f;
 
@@ -26,7 +26,7 @@ public class SpherePhysics : MonoBehaviour
     // In FixedUpdate we used Time.fixedDeltaTime as opposed to Time.deltaTime in Update()
     void FixedUpdate() 
     {
-        Triangle triangleRef = CollisionScript.collisionScriptInstance.CurrentTriangle;
+        Triangle triangleRef = CollisionScript.ColInstance.CurrentTriangle;
         
         // Velocity before potential collision
         Vector3 startVel = Velocity;
@@ -49,5 +49,5 @@ public class SpherePhysics : MonoBehaviour
         sphereInstance.SphereRadius, transform.position.z);
 
         Acceleration = (Velocity - startVel) / Time.deltaTime;      
-    }  
+    }
 }

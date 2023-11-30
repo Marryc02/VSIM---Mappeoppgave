@@ -10,8 +10,6 @@ public class BarycentricCoordinates : MonoBehaviour
 	{
 		barycInstance = this;
 	}
-
-	// Gets height from barycentric coordinates.
 	public float HeightFromBaryc(Vector2 playerPos)
 	{
 		Vector3 v0 = new Vector3();
@@ -43,7 +41,6 @@ public class BarycentricCoordinates : MonoBehaviour
 		return height;
 	}
 
-	// Calculates barycentric coordinates.
 	public Vector3 CalcBarycentricCoords(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 playerPos)
 	{
 		Vector2 v10 = v1 - v0;
