@@ -10,7 +10,10 @@ public class RainSpawnerScript : MonoBehaviour
 
 
     private void Start() {
-        spawnRaindrop();
+        if (TriangleSurfaceScript.triangleSurfaceInstance.bGenerateTriangleSurface == true)
+        {
+            spawnRaindrop();
+        }
     }
 
     private void OnDrawGizmosSelected() {
