@@ -12,6 +12,13 @@ using UnityEngine.UIElements;
 
 public class Triangle
 {
+    public int[]indices;
+    public int[]neighbours;
+    public int index;
+
+    public Vector3 surfaceNormal;
+    public Vector3 unitNormal;
+
     public Triangle(int i0, int i1, int i2, int triangle0, int triangle1, int triangle2, int triangleIndex)
     {
         indices = new[]{i0, i1, i2};
@@ -21,14 +28,6 @@ public class Triangle
         GetNormalVectors();
         NormalizeNormal();
     }
-
-    public int[]indices;
-    public int[]neighbours;
-    public int index;
-
-    public Vector3 surfaceNormal;
-    public Vector3 unitNormal;
-    
 
     public bool IsInTriangle(Vector3 ballPos)
 	{
@@ -46,10 +45,11 @@ public class Triangle
             if (this == TriangleSurfaceScript.triangleSurfaceInstance.madeTriangles[i])
             {
                 Debug.Log($"Ball over current triangle: {i}");
+                return true;
             }
         }
 
-        return true;
+        return false;
 	}
 
     void GetNormalVectors()
@@ -177,9 +177,9 @@ public class TriangleSurfaceScript : MonoBehaviour
     void makeTriangles(List<int> indicesInput, List<int> neighboursInput)
     {
         // Gets the amount of indices and divides by 3 for every future triangle.
-        var indicesListSize = indicesInput.Count / 3;
+        //var indicesListSize = indicesInput.Count / 3;
 
-        for (int i = 0; i < indicesListSize; i ++)
+        for (int i = 0; i < indicesInput.Count - 2; i += 3)
         {
             madeTriangles.Add(new Triangle(indicesInput[i], 
                                            indicesInput[i + 1], 
